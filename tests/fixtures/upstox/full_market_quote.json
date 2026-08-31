@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "data": {
+    "NSE_EQ:INE002A01018": {
+      "last_price": 1387.2,
+      "timestamp": "2026-08-28T15:29:00+05:30",
+      "depth": {
+        "buy": [{"price": 1387.1, "quantity": 40}],
+        "sell": [{"price": 1387.3, "quantity": 25}]
+      }
+    },
+    "NSE_FO:50001": {
+      "last_price": 35.4,
+      "timestamp": "2026-08-28T15:29:01+05:30",
+      "depth": {
+        "buy": [{"price": 35.1, "quantity": 250}],
+        "sell": [{"price": 35.6, "quantity": 500}]
+      },
+      "oi": 125000
+    }
+  }
+}

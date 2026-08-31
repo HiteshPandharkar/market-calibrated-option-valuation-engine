@@ -1,0 +1,2 @@
+currency,timestamp,rate,source,dataset,retrieved_at
+INR,2026-08-28T15:00:00+00:00,0.065,SAMPLE_RATES,FLAT_CONTINUOUS_RATE,2026-08-28T15:01:00+00:00

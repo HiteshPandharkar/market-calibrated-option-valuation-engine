@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "expiry": "2026-09-29",
+      "strike_price": 1400.0,
+      "underlying_key": "NSE_EQ|INE002A01018",
+      "underlying_spot_price": 1387.2,
+      "call_options": {
+        "instrument_key": "NSE_FO|50001",
+        "market_data": {
+          "ltp": 35.4,
+          "bid_price": 35.1,
+          "ask_price": 35.6,
+          "volume": 12000,
+          "oi": 125000
+        },
+        "option_greeks": {
+          "iv": 22.5,
+          "delta": 0.51,
+          "gamma": 0.006,
+          "theta": -4.2,
+          "vega": 1.8
+        }
+      }
+    }
+  ]
+}

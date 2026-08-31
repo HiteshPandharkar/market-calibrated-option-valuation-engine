@@ -1,0 +1,23 @@
+[
+  {
+    "segment": "NSE_EQ",
+    "name": "Reliance Industries Limited",
+    "exchange": "NSE",
+    "instrument_type": "EQ",
+    "instrument_key": "NSE_EQ|INE002A01018",
+    "trading_symbol": "RELIANCE",
+    "short_name": "RELIANCE"
+  },
+  {
+    "segment": "NSE_FO",
+    "name": "RELIANCE",
+    "exchange": "NSE",
+    "instrument_type": "CE",
+    "instrument_key": "NSE_FO|50001",
+    "trading_symbol": "RELIANCE 29 SEP 26 1400 CE",
+    "underlying_key": "NSE_EQ|INE002A01018",
+    "underlying_type": "EQUITY",
+    "strike_price": 1400.0,
+    "expiry": "2026-09-29"
+  }
+]

@@ -1,0 +1,2 @@
+symbol,timestamp,price,source,dataset,retrieved_at
+ACME,2026-08-28T15:29:00+00:00,1387.20,SAMPLE_EXCHANGE,SPOT_QUOTES,2026-08-28T15:29:05+00:00
