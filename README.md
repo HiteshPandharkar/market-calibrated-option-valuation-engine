@@ -31,6 +31,12 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
 ```
 
+Install the optional Streamlit presentation separately when needed:
+
+```powershell
+python -m pip install -e ".[ui,test]"
+```
+
 ## Quick start
 
 The committed CSV fixtures reproduce a complete single-contract valuation:
@@ -56,6 +62,25 @@ all options.
 From an uninstalled source checkout, prefix the equivalent module command with
 `$env:PYTHONPATH='src'` and use `python -m pyoptionpricer` in place of
 `price-option`.
+
+## Streamlit UI
+
+The Sprint 11 UI is a thin presentation adapter over the same application
+service used by the CLI. Start it from the repository root:
+
+```powershell
+streamlit run streamlit_app/app.py
+```
+
+Choose CSV for the committed reproducible fixtures, or Upstox for canonical
+underlying/expiry/strike/call-put lookup. Before selecting Upstox, provide
+`UPSTOX_ACCESS_TOKEN` in the process environment. Authentication and provider
+failures are rendered as sanitized messages; credentials and raw provider
+payloads are never displayed. The Upstox source is shown only as provenance.
+
+Streamlit widget/session flow lives in `streamlit_app/app.py`; request building,
+lookup, and result presentation live in a framework-independent adapter. No UI
+framework is imported by the `pyoptionpricer` core package.
 
 ## Capabilities
 
