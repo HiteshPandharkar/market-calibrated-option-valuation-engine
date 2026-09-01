@@ -1,8 +1,8 @@
-"""Backward-induction pricing for European and American vanilla options."""
+"""Backward-induction pricing for supported European and American payoffs."""
 
 from math import isfinite
 
-from pyoptionpricer.domain import ExerciseStyle, OptionProduct, OptionType
+from pyoptionpricer.domain import ExerciseStyle, OptionProduct
 from pyoptionpricer.models import PricingModel
 from pyoptionpricer.models.tree import calculate_crr_tree_parameters
 from pyoptionpricer.pricing.engines import EngineCapabilities, ModelCapabilityValidator
@@ -19,7 +19,7 @@ class CRRPricingEngine:
     model = PricingModel.CRR
     model_name = model.value
     capabilities = EngineCapabilities(
-        products=frozenset({OptionProduct.VANILLA}),
+        products=frozenset({OptionProduct.VANILLA, OptionProduct.DIGITAL}),
         exercise_styles=frozenset(
             {ExerciseStyle.EUROPEAN, ExerciseStyle.AMERICAN}
         ),
@@ -44,14 +44,14 @@ class CRRPricingEngine:
         if steps < 2:
             raise PricingError("at least two CRR steps are required to calculate Greeks")
         spot = inputs.spot.value
-        strike = inputs.strike.value
+        payoff = request.instrument.payoff
 
         try:
             values = [
-                self._payoff(
-                    spot * tree.up_factor**up_moves * tree.down_factor ** (steps - up_moves),
-                    strike,
-                    request.instrument.option_type,
+                payoff.value_at(
+                    spot
+                    * tree.up_factor**up_moves
+                    * tree.down_factor ** (steps - up_moves)
                 )
                 for up_moves in range(steps + 1)
             ]
@@ -78,9 +78,7 @@ class CRRPricingEngine:
                     )
                 except OverflowError as error:
                     raise PricingError("lattice backward induction overflowed") from error
-                intrinsic = self._payoff(
-                    node_spot, strike, request.instrument.option_type
-                )
+                intrinsic = payoff.value_at(node_spot)
                 node_value, exercised = policy.node_value(continuation, intrinsic)
                 early_exercise_nodes += int(exercised)
                 next_values.append(node_value)
@@ -122,9 +120,3 @@ class CRRPricingEngine:
             greeks=greeks,
             diagnostics=PricingDiagnostics(tree, early_exercise_nodes),
         )
-
-    @staticmethod
-    def _payoff(spot: float, strike: float, option_type: OptionType) -> float:
-        if option_type is OptionType.CALL:
-            return max(spot - strike, 0.0)
-        return max(strike - spot, 0.0)

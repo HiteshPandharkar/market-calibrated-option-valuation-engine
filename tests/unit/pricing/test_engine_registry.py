@@ -11,7 +11,6 @@ from pyoptionpricer import (
     ExerciseStyle,
     ModelCapabilityValidator,
     ModelSelection,
-    OptionContract,
     OptionProduct,
     OptionType,
     PRICING_ENGINE_ROUTES,
@@ -21,6 +20,7 @@ from pyoptionpricer import (
     InvalidPricingRequestError,
     UnsupportedInstrumentModelCombinationError,
     UnsupportedModelError,
+    VanillaOptionContract,
     build_available_pricing_engine,
 )
 from pyoptionpricer.market import (
@@ -37,7 +37,7 @@ def pricing_request(
 ) -> PricingRequest:
     valuation = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
     observed = datetime(2026, 9, 1, 11, 59, tzinfo=UTC)
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         underlying="ACME",
         strike=100.0,
         expiry=date(2027, 9, 1),

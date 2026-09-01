@@ -6,13 +6,13 @@ from pyoptionpricer import (
     AssetClass,
     Currency,
     ExerciseStyle,
-    OptionContract,
     OptionType,
+    VanillaOptionContract,
 )
 from pyoptionpricer.domain.option_contract import InvalidContractError
 
 
-def make_contract(**overrides: object) -> OptionContract:
+def make_contract(**overrides: object) -> VanillaOptionContract:
     values = {
         "underlying": "NIFTY",
         "strike": 25000.0,
@@ -25,7 +25,7 @@ def make_contract(**overrides: object) -> OptionContract:
         "currency": Currency.INR,
     }
     values.update(overrides)
-    return OptionContract(**values)  # type: ignore[arg-type]
+    return VanillaOptionContract(**values)  # type: ignore[arg-type]
 
 
 def test_option_contract_preserves_static_terms() -> None:

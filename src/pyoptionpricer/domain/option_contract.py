@@ -1,9 +1,14 @@
-"""Immutable exchange-listed vanilla option contracts."""
+"""Immutable option instruments and product-specific contracts."""
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 from math import isfinite
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyoptionpricer.domain.payoffs import TerminalPayoff
 
 
 class OptionType(str, Enum):
@@ -44,8 +49,8 @@ class InvalidContractError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
-class OptionContract:
-    """Static terms of a plain-vanilla exchange option."""
+class OptionContract(ABC):
+    """Common static terms shared by supported option products."""
 
     underlying: str
     strike: float
@@ -83,6 +88,61 @@ class OptionContract:
         object.__setattr__(self, "strike", float(self.strike))
 
     @property
+    @abstractmethod
     def product(self) -> OptionProduct:
-        """Identify the listed contract as a plain-vanilla option."""
+        """Identify the product family for engine capability validation."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def payoff(self) -> "TerminalPayoff":
+        """Return the product's engine-neutral terminal payoff."""
+        raise NotImplementedError
+
+
+class VanillaOptionContract(OptionContract):
+    """Static terms of a plain-vanilla exchange option."""
+
+    @property
+    def product(self) -> OptionProduct:
+        """Identify this contract as a plain-vanilla option."""
         return OptionProduct.VANILLA
+
+    @property
+    def payoff(self) -> "TerminalPayoff":
+        """Return the contract's engine-neutral terminal payoff."""
+        from pyoptionpricer.domain.payoffs import VanillaPayoff
+
+        return VanillaPayoff(self.option_type, self.strike)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class DigitalOptionContract(OptionContract):
+    """Cash-or-nothing option terms with a configurable fixed payout."""
+
+    cash_payout: float
+
+    def __post_init__(self) -> None:
+        OptionContract.__post_init__(self)
+        if (
+            isinstance(self.cash_payout, bool)
+            or not isinstance(self.cash_payout, (int, float))
+            or not isfinite(self.cash_payout)
+            or self.cash_payout <= 0
+        ):
+            raise InvalidContractError(
+                "cash_payout must be a finite positive number"
+            )
+        object.__setattr__(self, "cash_payout", float(self.cash_payout))
+
+    @property
+    def product(self) -> OptionProduct:
+        return OptionProduct.DIGITAL
+
+    @property
+    def payoff(self) -> "TerminalPayoff":
+        from pyoptionpricer.domain.payoffs import CashOrNothingPayoff
+
+        return CashOrNothingPayoff(
+            self.option_type, self.strike, self.cash_payout
+        )

@@ -2,7 +2,8 @@
 
 PyOptionPricer is a provider-neutral Python engine for valuing European and
 American options with the Cox-Ross-Rubinstein (CRR) binomial model and European
-vanilla options with analytical Black-Scholes-Merton (BSM). It combines normalized market data
+vanilla and cash-or-nothing digital options with analytical Black-Scholes-Merton
+(BSM). It combines normalized market data
 with auditable input provenance, tree-based Greeks, market comparison,
 implied-volatility calibration, convergence analysis, and structured
 diagnostics.
@@ -59,8 +60,9 @@ From an uninstalled source checkout, prefix the equivalent module command with
 
 ## Capabilities
 
-- CRR valuation for European and American calls and puts
-- analytical BSM valuation and Delta/Gamma/Theta/Vega/Rho for European calls and puts
+- CRR valuation for European and American vanilla and cash-or-nothing digital calls and puts
+- analytical BSM valuation and Delta/Gamma/Theta/Vega/Rho for European vanilla and cash-or-nothing digital calls and puts
+- configurable digital cash payouts with a strict, zero-payoff strike boundary
 - maturity-aware yield curves and continuous dividend yields
 - historical, EWMA, and market-surface volatility selection
 - Delta, Gamma, and annualized Theta calculated from the tree
@@ -70,6 +72,33 @@ From an uninstalled source checkout, prefix the equivalent module command with
 - end-to-end single-contract workflows with complete input provenance
 - canonical model selection with explicit engine capability validation
 - deterministic, provider-neutral CSV and Upstox test paths
+
+## Package layout
+
+Model implementations are grouped by model rather than mixed into the shared
+pricing orchestration package:
+
+```text
+pyoptionpricer/
+├── models/
+│   ├── bsm/
+│   │   ├── engine.py
+│   │   └── products.py
+│   └── tree/
+│       ├── crr.py
+│       ├── parameters.py
+│       ├── pricing_engine.py
+│       └── convergence.py
+└── pricing/
+    ├── engine_registry.py
+    ├── engine_router.py
+    ├── requests.py
+    └── results.py
+```
+
+`OptionContract` defines common option terms. `VanillaOptionContract` and
+`DigitalOptionContract` supply their own product identifiers and terminal
+payoffs. Stable public imports remain available from `pyoptionpricer`.
 
 Market implied volatility is preferred when a provider supplies a reliable
 option chain. Historical or EWMA volatility is used only when an explicit

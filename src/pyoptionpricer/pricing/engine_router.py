@@ -10,9 +10,9 @@ from types import MappingProxyType
 from typing import Final
 
 from pyoptionpricer.models import PricingModel
-from pyoptionpricer.pricing.bsm_engine import BSMPricingEngine
+from pyoptionpricer.models.bsm.engine import BSMPricingEngine
 from pyoptionpricer.pricing.engines import EngineCapabilities, PricingEngine
-from pyoptionpricer.pricing.tree_engine import CRRPricingEngine
+from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
 
 
 EngineBuilder = Callable[[], PricingEngine]

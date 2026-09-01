@@ -13,12 +13,12 @@ from pyoptionpricer import (
     DiagnosticStatus,
     ExerciseStyle,
     MarketDataSynchronizationError,
-    OptionContract,
     OptionType,
     SingleContractValuationRequest,
     SingleContractValuationService,
     VolatilitySelection,
     VolatilitySource,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     ContinuousDividendYield,
@@ -61,7 +61,7 @@ class FixtureUpstoxClient:
 
 def test_csv_files_reproduce_complete_single_contract_valuation() -> None:
     provider = CSVMarketDataProvider(FIXTURES / "market_data")
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         underlying="ACME",
         strike=1400.0,
         expiry=date(2026, 12, 31),

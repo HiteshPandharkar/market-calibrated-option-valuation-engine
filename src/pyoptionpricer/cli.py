@@ -21,8 +21,8 @@ from pyoptionpricer.domain import (
     AssetClass,
     Currency,
     ExerciseStyle,
-    OptionContract,
     OptionType,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     ContinuousDividendYield,
@@ -194,7 +194,7 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _contract(values: argparse.Namespace) -> OptionContract | None:
+def _contract(values: argparse.Namespace) -> VanillaOptionContract | None:
     supplied = (values.strike, values.expiry, values.type)
     if all(value is None for value in supplied):
         if values.provider == MarketDataProviderName.CSV.value:
@@ -204,7 +204,7 @@ def _contract(values: argparse.Namespace) -> OptionContract | None:
         return None
     if any(value is None for value in supplied):
         raise ValueError("--strike, --expiry, and --type must be supplied together")
-    return OptionContract(
+    return VanillaOptionContract(
         underlying=values.underlying_id,
         strike=values.strike,
         expiry=date.fromisoformat(values.expiry),

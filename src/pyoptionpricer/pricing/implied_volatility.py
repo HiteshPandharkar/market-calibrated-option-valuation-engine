@@ -6,7 +6,8 @@ from math import isfinite
 from pyoptionpricer.models.tree import InvalidTreeParametersError
 from pyoptionpricer.pricing.requests import PricingRequest
 from pyoptionpricer.pricing.results import PricingResult
-from pyoptionpricer.pricing.tree_engine import CRRPricingEngine, PricingError
+from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
+from pyoptionpricer.pricing.errors import PricingError
 
 
 class ImpliedVolatilityError(RuntimeError):

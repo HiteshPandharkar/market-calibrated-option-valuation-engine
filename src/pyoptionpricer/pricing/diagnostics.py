@@ -5,7 +5,7 @@ from datetime import timedelta
 from enum import Enum
 from math import exp, isfinite
 
-from pyoptionpricer.domain import ExerciseStyle, OptionType
+from pyoptionpricer.domain import CashOrNothingPayoff, ExerciseStyle, OptionType
 from pyoptionpricer.market.exceptions import (
     MalformedMarketDataError,
     MarketDataAuthenticationError,
@@ -217,6 +217,19 @@ def _satisfies_no_arbitrage(request: PricingRequest, result: PricingResult) -> b
     spot = inputs.spot.value
     strike = inputs.strike.value
     maturity = inputs.maturity.value
+    payoff = request.instrument.payoff
+    if isinstance(payoff, CashOrNothingPayoff):
+        if request.instrument.exercise_style is ExerciseStyle.AMERICAN:
+            lower = payoff.value_at(spot)
+            upper = payoff.payout
+        else:
+            lower = 0.0
+            upper = payoff.payout * exp(
+                -inputs.risk_free_rate.value * maturity
+            )
+        tolerance = 1e-12 * max(1.0, upper)
+        return factor_condition and lower - tolerance <= result.price <= upper + tolerance
+
     if request.instrument.exercise_style is ExerciseStyle.AMERICAN:
         intrinsic = (
             spot - strike

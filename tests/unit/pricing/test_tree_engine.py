@@ -10,11 +10,11 @@ from pyoptionpricer import (
     Currency,
     ExerciseStyle,
     InvalidPricingRequestError,
-    OptionContract,
     OptionType,
     PricingError,
     PricingResult,
     PricingRequest,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     ContinuousDividendYield,
@@ -41,7 +41,7 @@ def request(
     steps: int = 500,
     expiry: date = EXPIRY,
 ) -> PricingRequest:
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "ACME",
         strike,
         expiry,

@@ -24,11 +24,30 @@ the request against these capabilities before dispatch. Invalid combinations
 raise `UnsupportedInstrumentModelCombinationError` with the selected model,
 product family, exercise style, and reason as structured attributes.
 
-CRR supports European and American vanilla options. Black-Scholes-Merton (BSM)
-supports European vanilla calls and puts and is selected with
+`OptionContract` owns only the common static option terms. Its concrete
+`VanillaOptionContract` and `DigitalOptionContract` subtypes provide their own
+product identifier and terminal payoff; neither concrete product is modeled as
+a subtype of the other.
+
+CRR supports European and American vanilla and cash-or-nothing digital options.
+Black-Scholes-Merton (BSM) supports European vanilla and cash-or-nothing digital
+calls and puts and is selected with
 `BSMModelParameters`. BSM uses continuous compounding for the risk-free rate
 and dividend yield and returns analytical Delta, Gamma, annual Theta, Vega, and
 Rho. Vega and Rho are reported per unit (1.00) change, not per percentage point.
+
+Digital options carry a configurable `cash_payout`. Both the call and put pay
+zero when terminal spot is exactly equal to strike; payout requires strict
+in-the-money settlement. Analytical digital Greeks are returned without
+smoothing because their near-strike instability is economically meaningful.
+
+BSM product formulas are isolated behind `BSMProductPricer` strategies.
+`BSM_PRODUCT_PRICERS` is the immutable composition point that maps each
+supported `OptionProduct` to its strategy. Adding another analytical BSM
+product therefore does not add product conditionals to `BSMPricingEngine`.
+The engine, product strategies, and their shared numerical context are grouped
+under the `pyoptionpricer.models.bsm` package. CRR parameters, lattice
+construction, pricing, and convergence live under `pyoptionpricer.models.tree`.
 
 `BSMModelParameters` exposes the maturity and volatility thresholds used to
 select the deterministic discounted-payoff limit. This avoids division by a

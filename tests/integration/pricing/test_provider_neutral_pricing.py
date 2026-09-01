@@ -11,9 +11,9 @@ from pyoptionpricer import (
     CRRModelParameters,
     CRRPricingEngine,
     ExerciseStyle,
-    OptionContract,
     OptionType,
     PricingRequest,
+    VanillaOptionContract,
     compare_to_market,
 )
 from pyoptionpricer.market import (
@@ -34,7 +34,7 @@ FIXTURES = Path(__file__).parents[2] / "fixtures"
 def test_normalized_provider_snapshots_use_the_same_crr_workflow(source: str) -> None:
     valuation = datetime(2026, 8, 30, 12, 0, tzinfo=UTC)
     timestamp = datetime(2026, 8, 30, 11, 59, tzinfo=UTC)
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "NIFTY",
         25000.0,
         date(2026, 11, 30),
@@ -94,7 +94,7 @@ def test_implied_volatility_accepts_csv_and_normalized_upstox_quotes() -> None:
     upstox_quote = UpstoxMapper(
         lambda: datetime(2026, 8, 28, 10, 0, tzinfo=UTC)
     ).map_option_quote(payload, "NSE_FO|50001")
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "ACME",
         1400.0,
         date(2026, 12, 31),

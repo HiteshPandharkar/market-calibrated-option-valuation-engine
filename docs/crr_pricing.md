@@ -1,8 +1,13 @@
 # CRR pricing conventions
 
-Sprint 5 prices plain-vanilla European and American calls and puts with a
-recombining Cox-Ross-Rubinstein tree. A pricing request contains an immutable
-`OptionContract`, a normalized `MarketSnapshot`, and `CRRModelParameters`.
+The CRR engine prices European and American vanilla and cash-or-nothing digital
+calls and puts with a recombining Cox-Ross-Rubinstein tree. A pricing request contains an immutable
+`VanillaOptionContract` or another supported `OptionContract`, a normalized
+`MarketSnapshot`, and `CRRModelParameters`.
+
+The CRR pricing engine is located with the model implementation under
+`pyoptionpricer.models.tree.pricing_engine`; convergence analysis is under
+`pyoptionpricer.models.tree.convergence`.
 Provider response objects and vendor-specific identifiers are not accepted by
 the pricing layer.
 

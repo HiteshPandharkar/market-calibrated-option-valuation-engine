@@ -1,6 +1,6 @@
 """Provider-neutral pricing requests, results, and engines."""
 
-from pyoptionpricer.pricing.convergence import (
+from pyoptionpricer.models.tree.convergence import (
     CRRConvergenceRunner,
     ConvergenceConfig,
     ConvergencePoint,
@@ -19,7 +19,15 @@ from pyoptionpricer.pricing.engine_router import (
     PRICING_ENGINE_ROUTES,
     build_available_pricing_engine,
 )
-from pyoptionpricer.pricing.bsm_engine import BSMPricingEngine
+from pyoptionpricer.models.bsm import (
+    BSMCalculation,
+    BSMInputs,
+    BSMPricingEngine,
+    BSMProductPricer,
+    BSM_PRODUCT_PRICERS,
+    CashDigitalBSMProductPricer,
+    VanillaBSMProductPricer,
+)
 from pyoptionpricer.pricing.engine_registry import PricingEngineRegistry
 from pyoptionpricer.pricing.engines import (
     EngineCapabilities,
@@ -52,14 +60,19 @@ from pyoptionpricer.pricing.results import (
     PricingResult,
 )
 from pyoptionpricer.pricing.errors import PricingError
-from pyoptionpricer.pricing.tree_engine import CRRPricingEngine
+from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
 
 __all__ = [
     "CRRConvergenceRunner",
     "BSMPricingDiagnostics",
     "BSMPricingEngine",
+    "BSMCalculation",
+    "BSMInputs",
+    "BSMProductPricer",
+    "BSM_PRODUCT_PRICERS",
     "CRRImpliedVolatilitySolver",
     "CRRPricingEngine",
+    "CashDigitalBSMProductPricer",
     "ConvergenceConfig",
     "ConvergencePoint",
     "ConvergenceResult",
@@ -90,6 +103,7 @@ __all__ = [
     "PricingResult",
     "UnsupportedInstrumentModelCombinationError",
     "UnsupportedModelError",
+    "VanillaBSMProductPricer",
     "compare_to_market",
     "diagnose_pricing_result",
     "diagnose_provider_error",

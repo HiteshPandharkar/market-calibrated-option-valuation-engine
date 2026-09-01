@@ -12,9 +12,9 @@ from pyoptionpricer import (
     ImpliedVolatilityConfig,
     ImpliedVolatilityConvergenceError,
     ImpliedVolatilityError,
-    OptionContract,
     OptionType,
     PricingRequest,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     ContinuousDividendYield,
@@ -35,7 +35,7 @@ def make_request(
     quote: OptionQuote | None = None,
     source: str = "CSV",
 ) -> PricingRequest:
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "ACME",
         100.0,
         date(2027, 8, 30),

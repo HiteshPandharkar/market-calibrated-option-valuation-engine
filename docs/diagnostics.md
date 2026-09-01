@@ -12,6 +12,10 @@ count in a `ConvergenceConfig`. Step counts must be unique, strictly
 increasing integers of at least two. The default schedule is 10, 25, 50, 100,
 250, 500, and 1000 steps.
 
+The convergence implementation is colocated with the CRR model in
+`pyoptionpricer.models.tree.convergence` and remains publicly exported from
+`pyoptionpricer`.
+
 Every outcome is retained as a `ConvergencePoint`. Successful points contain
 the complete `PricingResult`; numerical or invalid-tree failures contain no
 price and retain an error message. Any failed point makes the convergence

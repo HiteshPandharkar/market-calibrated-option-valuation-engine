@@ -14,7 +14,6 @@ from pyoptionpricer import (
     DiagnosticCode,
     DiagnosticStatus,
     ExerciseStyle,
-    OptionContract,
     OptionType,
     PricingEngineRegistry,
     PricingError,
@@ -22,6 +21,7 @@ from pyoptionpricer import (
     PricingModel,
     PricingRequest,
     UnsupportedInstrumentModelCombinationError,
+    VanillaOptionContract,
     diagnose_pricing_result,
 )
 from pyoptionpricer.market import (
@@ -49,7 +49,7 @@ def request(
     expiry: date = EXPIRY,
     parameters: BSMModelParameters | CRRModelParameters | None = None,
 ) -> PricingRequest:
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "ACME",
         strike,
         expiry,

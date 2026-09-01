@@ -10,6 +10,7 @@ from pyoptionpricer.domain import (
     Currency,
     ExerciseStyle,
     OptionContract,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     DividendYield,
@@ -224,7 +225,7 @@ class CanonicalContractResolver:
         reference: InstrumentReference,
         selection: ContractSelection,
         provider: InstrumentReferenceProvider,
-    ) -> OptionContract:
+    ) -> VanillaOptionContract:
         if reference.instrument_type is not InstrumentType.OPTION:
             raise ContractResolutionError(
                 f"{selection.contract_id!r} does not identify an option"
@@ -253,7 +254,7 @@ class CanonicalContractResolver:
             raise ContractResolutionError(
                 f"unsupported contract currency {reference.currency!r}"
             ) from error
-        return OptionContract(
+        return VanillaOptionContract(
             underlying=underlying_id,
             strike=reference.strike,
             expiry=reference.expiry,
@@ -267,7 +268,7 @@ class CanonicalContractResolver:
 
     @staticmethod
     def _require_matching_terms(
-        supplied: OptionContract, resolved: OptionContract
+        supplied: OptionContract, resolved: VanillaOptionContract
     ) -> None:
         fields = ("strike", "expiry", "option_type", "currency")
         mismatches = [

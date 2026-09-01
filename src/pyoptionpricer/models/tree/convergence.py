@@ -11,7 +11,8 @@ from pyoptionpricer.pricing.diagnostics import (
 )
 from pyoptionpricer.pricing.requests import PricingRequest
 from pyoptionpricer.pricing.results import PricingResult
-from pyoptionpricer.pricing.tree_engine import CRRPricingEngine, PricingError
+from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
+from pyoptionpricer.pricing.errors import PricingError
 
 
 @dataclass(frozen=True, slots=True)

@@ -13,11 +13,11 @@ from pyoptionpricer import (
     DiagnosticCode,
     DiagnosticStatus,
     ExerciseStyle,
-    OptionContract,
     OptionType,
     PricingRequest,
     diagnose_pricing_result,
     diagnose_provider_error,
+    VanillaOptionContract,
 )
 from pyoptionpricer.market import (
     ContinuousDividendYield,
@@ -45,7 +45,7 @@ def make_request(
     volatility: float = 0.20,
     steps: int = 200,
 ) -> PricingRequest:
-    contract = OptionContract(
+    contract = VanillaOptionContract(
         "ACME",
         100.0,
         date(2027, 8, 30),

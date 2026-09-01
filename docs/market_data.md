@@ -1,8 +1,8 @@
 # Market inputs
 
 Pricing code consumes project-owned market models rather than provider payloads.
-Sprint 3 defines maturity-aware interest-rate and dividend inputs; a later sprint
-will connect them to the CRR engine.
+Maturity-aware interest-rate, dividend, and volatility inputs feed both the CRR
+and BSM engines through normalized `PricingRequest` values.
 
 ## Rate conventions
 
