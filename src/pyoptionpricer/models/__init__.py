@@ -5,8 +5,14 @@ from pyoptionpricer.models.model import (
     PricingModel,
     PricingModelConfiguration,
 )
+from pyoptionpricer.models.analytical import (
+    BSMModelParameters,
+    InvalidBSMParametersError,
+)
 
 __all__ = [
+    "BSMModelParameters",
+    "InvalidBSMParametersError",
     "ModelSelection",
     "PricingModel",
     "PricingModelConfiguration",

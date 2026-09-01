@@ -6,14 +6,11 @@ from pyoptionpricer.domain import ExerciseStyle, OptionProduct, OptionType
 from pyoptionpricer.models import PricingModel
 from pyoptionpricer.models.tree import calculate_crr_tree_parameters
 from pyoptionpricer.pricing.engines import EngineCapabilities, ModelCapabilityValidator
+from pyoptionpricer.pricing.errors import PricingError
 from pyoptionpricer.pricing.exercise import exercise_policy
 from pyoptionpricer.pricing.greeks import GreekCalculationError, calculate_tree_greeks
 from pyoptionpricer.pricing.requests import PricingRequest
 from pyoptionpricer.pricing.results import PricingDiagnostics, PricingResult
-
-
-class PricingError(RuntimeError):
-    """Raised when a valid request cannot be priced numerically."""
 
 
 class CRRPricingEngine:

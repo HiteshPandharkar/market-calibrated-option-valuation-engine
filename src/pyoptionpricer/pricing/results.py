@@ -1,7 +1,8 @@
-"""Structured outputs from tree pricing engines."""
+"""Structured outputs from pricing engines."""
 
 from dataclasses import dataclass
 from datetime import datetime
+from math import isfinite
 
 from pyoptionpricer.domain import Currency
 from pyoptionpricer.models import PricingModel, PricingModelConfiguration
@@ -19,6 +20,33 @@ class PricingDiagnostics:
 
 
 @dataclass(frozen=True, slots=True)
+class BSMPricingDiagnostics:
+    """Auditable analytical quantities and numerical path used by BSM."""
+
+    calculation_mode: str
+    spot_discount_factor: float
+    strike_discount_factor: float
+    d1: float | None
+    d2: float | None
+
+    def __post_init__(self) -> None:
+        if self.calculation_mode not in {"ANALYTICAL", "DETERMINISTIC_LIMIT"}:
+            raise ValueError("calculation_mode must identify a BSM numerical path")
+        if any(
+            not isfinite(value) or value < 0
+            for value in (self.spot_discount_factor, self.strike_discount_factor)
+        ):
+            raise ValueError("BSM discount factors must be finite and non-negative")
+        if self.calculation_mode == "ANALYTICAL":
+            if self.d1 is None or self.d2 is None:
+                raise ValueError("analytical BSM diagnostics require d1 and d2")
+            if not isfinite(self.d1) or not isfinite(self.d2):
+                raise ValueError("BSM d1 and d2 must be finite")
+        elif self.d1 is not None or self.d2 is not None:
+            raise ValueError("deterministic-limit diagnostics do not define d1 or d2")
+
+
+@dataclass(frozen=True, slots=True)
 class PricingResult:
     """Structured theoretical value and its reproducibility metadata."""
 
@@ -29,7 +57,7 @@ class PricingResult:
     valuation_datetime: datetime
     inputs: PricingInputs
     greeks: OptionGreeks
-    diagnostics: PricingDiagnostics
+    diagnostics: PricingDiagnostics | BSMPricingDiagnostics
 
     @property
     def model(self) -> PricingModel:

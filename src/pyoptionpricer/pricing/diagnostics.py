@@ -14,7 +14,7 @@ from pyoptionpricer.market.exceptions import (
     UnsupportedMarketDataCapabilityError,
 )
 from pyoptionpricer.pricing.requests import PricingRequest
-from pyoptionpricer.pricing.results import PricingResult
+from pyoptionpricer.pricing.results import PricingDiagnostics, PricingResult
 
 
 class DiagnosticStatus(str, Enum):
@@ -130,26 +130,33 @@ def diagnose_pricing_result(
             "option quote is within the configured freshness threshold",
         )
 
-    probability = result.diagnostics.tree_parameters.risk_neutral_probability
-    probability_valid = isfinite(probability) and 0.0 <= probability <= 1.0
-    probability_check = DiagnosticCheck(
-        DiagnosticCode.RISK_NEUTRAL_PROBABILITY,
-        DiagnosticStatus.PASS if probability_valid else DiagnosticStatus.FAIL,
-        (
-            "risk-neutral probability is within [0, 1]"
-            if probability_valid
-            else "risk-neutral probability is invalid"
-        ),
-    )
+    if isinstance(result.diagnostics, PricingDiagnostics):
+        probability = result.diagnostics.tree_parameters.risk_neutral_probability
+        probability_valid = isfinite(probability) and 0.0 <= probability <= 1.0
+        probability_check = DiagnosticCheck(
+            DiagnosticCode.RISK_NEUTRAL_PROBABILITY,
+            DiagnosticStatus.PASS if probability_valid else DiagnosticStatus.FAIL,
+            (
+                "risk-neutral probability is within [0, 1]"
+                if probability_valid
+                else "risk-neutral probability is invalid"
+            ),
+        )
+    else:
+        probability_check = DiagnosticCheck(
+            DiagnosticCode.RISK_NEUTRAL_PROBABILITY,
+            DiagnosticStatus.PASS,
+            "risk-neutral probability is not required by the analytical model",
+        )
 
     no_arbitrage_valid = _satisfies_no_arbitrage(request, result)
     no_arbitrage_check = DiagnosticCheck(
         DiagnosticCode.NO_ARBITRAGE,
         DiagnosticStatus.PASS if no_arbitrage_valid else DiagnosticStatus.FAIL,
         (
-            "tree factors and option value satisfy no-arbitrage bounds"
+            "model inputs and option value satisfy no-arbitrage bounds"
             if no_arbitrage_valid
-            else "tree factors or option value violate no-arbitrage bounds"
+            else "model inputs or option value violate no-arbitrage bounds"
         ),
     )
 
@@ -197,11 +204,15 @@ def diagnose_provider_error(error: MarketDataProviderError) -> DiagnosticCheck:
 
 def _satisfies_no_arbitrage(request: PricingRequest, result: PricingResult) -> bool:
     inputs = request.inputs
-    tree = result.diagnostics.tree_parameters
-    growth = exp(
-        (inputs.risk_free_rate.value - inputs.dividend_yield.value) * tree.time_step
-    )
-    factor_condition = tree.down_factor <= growth <= tree.up_factor
+    if isinstance(result.diagnostics, PricingDiagnostics):
+        tree = result.diagnostics.tree_parameters
+        growth = exp(
+            (inputs.risk_free_rate.value - inputs.dividend_yield.value)
+            * tree.time_step
+        )
+        factor_condition = tree.down_factor <= growth <= tree.up_factor
+    else:
+        factor_condition = True
 
     spot = inputs.spot.value
     strike = inputs.strike.value

@@ -25,6 +25,8 @@ from pyoptionpricer.domain import (
     OptionType,
 )
 from pyoptionpricer.models import (
+    BSMModelParameters,
+    InvalidBSMParametersError,
     ModelSelection,
     PricingModel,
     PricingModelConfiguration,
@@ -36,6 +38,8 @@ from pyoptionpricer.models.tree import (
     calculate_crr_tree_parameters,
 )
 from pyoptionpricer.pricing import (
+    BSMPricingDiagnostics,
+    BSMPricingEngine,
     CRRConvergenceRunner,
     CRRImpliedVolatilitySolver,
     CRRPricingEngine,
@@ -76,6 +80,9 @@ from pyoptionpricer.pricing import (
 
 __all__ = [
     "AssetClass",
+    "BSMModelParameters",
+    "BSMPricingDiagnostics",
+    "BSMPricingEngine",
     "CanonicalContractResolver",
     "CRRModelParameters",
     "CRRConvergenceRunner",
@@ -101,6 +108,7 @@ __all__ = [
     "ImpliedVolatilityError",
     "ImpliedVolatilityResult",
     "InvalidContractError",
+    "InvalidBSMParametersError",
     "InvalidPricingRequestError",
     "InvalidTreeParametersError",
     "MarketComparison",

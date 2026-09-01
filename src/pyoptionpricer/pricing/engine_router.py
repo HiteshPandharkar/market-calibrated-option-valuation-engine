@@ -10,6 +10,7 @@ from types import MappingProxyType
 from typing import Final
 
 from pyoptionpricer.models import PricingModel
+from pyoptionpricer.pricing.bsm_engine import BSMPricingEngine
 from pyoptionpricer.pricing.engines import EngineCapabilities, PricingEngine
 from pyoptionpricer.pricing.tree_engine import CRRPricingEngine
 
@@ -21,6 +22,7 @@ PRICING_ENGINE_ROUTES: Final[Mapping[PricingModel, EngineBuilder]] = (
     MappingProxyType(
         {
             PricingModel.CRR: CRRPricingEngine,
+            PricingModel.BLACK_SCHOLES_MERTON: BSMPricingEngine,
         }
     )
 )

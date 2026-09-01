@@ -1,4 +1,4 @@
-"""Tree-based first- and second-order option sensitivities."""
+"""First- and second-order option sensitivities."""
 
 from dataclasses import dataclass
 from math import isfinite
@@ -10,19 +10,28 @@ class GreekCalculationError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class OptionGreeks:
-    """CRR sensitivities in spot and annual time units.
+    """Option sensitivities in spot and annual time units.
 
     ``delta`` is option-currency units per one currency unit of spot,
     ``gamma`` is the delta change per one currency unit of spot, and ``theta``
-    is the option-value change per calendar year as time advances.
+    is the option-value change per calendar year as time advances. Analytical
+    engines may also supply ``vega`` and ``rho`` per unit (1.00) change in
+    volatility and continuously compounded rate. Tree engines leave them
+    unavailable rather than approximating them implicitly.
     """
 
     delta: float
     gamma: float
     theta: float
+    vega: float | None = None
+    rho: float | None = None
 
     def __post_init__(self) -> None:
-        if any(not isfinite(value) for value in (self.delta, self.gamma, self.theta)):
+        required = (self.delta, self.gamma, self.theta)
+        optional = (self.vega, self.rho)
+        if any(not isfinite(value) for value in required) or any(
+            value is not None and not isfinite(value) for value in optional
+        ):
             raise GreekCalculationError("calculated Greeks must be finite")
 
 

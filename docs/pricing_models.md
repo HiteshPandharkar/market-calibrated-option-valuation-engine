@@ -24,7 +24,19 @@ the request against these capabilities before dispatch. Invalid combinations
 raise `UnsupportedInstrumentModelCombinationError` with the selected model,
 product family, exercise style, and reason as structured attributes.
 
-Sprint P2.1 registers CRR for European and American vanilla options. The
-canonical identifiers for Black-Scholes-Merton and Monte Carlo are reserved for
-their later implementations; attempting to select either before its engine is
-implemented fails explicitly.
+CRR supports European and American vanilla options. Black-Scholes-Merton (BSM)
+supports European vanilla calls and puts and is selected with
+`BSMModelParameters`. BSM uses continuous compounding for the risk-free rate
+and dividend yield and returns analytical Delta, Gamma, annual Theta, Vega, and
+Rho. Vega and Rho are reported per unit (1.00) change, not per percentage point.
+
+`BSMModelParameters` exposes the maturity and volatility thresholds used to
+select the deterministic discounted-payoff limit. This avoids division by a
+vanishing standard deviation without silently clamping market inputs. At the
+discounted at-the-money boundary the limit uses the symmetric 0.5 Delta
+convention. `BSMPricingDiagnostics.calculation_mode` records whether the
+analytical formula or deterministic limit was used, together with discount
+factors and `d1`/`d2` when defined.
+
+Monte Carlo remains reserved for its later implementation; selecting it fails
+explicitly.

@@ -19,6 +19,7 @@ from pyoptionpricer.pricing.engine_router import (
     PRICING_ENGINE_ROUTES,
     build_available_pricing_engine,
 )
+from pyoptionpricer.pricing.bsm_engine import BSMPricingEngine
 from pyoptionpricer.pricing.engine_registry import PricingEngineRegistry
 from pyoptionpricer.pricing.engines import (
     EngineCapabilities,
@@ -45,11 +46,18 @@ from pyoptionpricer.pricing.requests import (
     PricingInputs,
     PricingRequest,
 )
-from pyoptionpricer.pricing.results import PricingDiagnostics, PricingResult
-from pyoptionpricer.pricing.tree_engine import CRRPricingEngine, PricingError
+from pyoptionpricer.pricing.results import (
+    BSMPricingDiagnostics,
+    PricingDiagnostics,
+    PricingResult,
+)
+from pyoptionpricer.pricing.errors import PricingError
+from pyoptionpricer.pricing.tree_engine import CRRPricingEngine
 
 __all__ = [
     "CRRConvergenceRunner",
+    "BSMPricingDiagnostics",
+    "BSMPricingEngine",
     "CRRImpliedVolatilitySolver",
     "CRRPricingEngine",
     "ConvergenceConfig",
