@@ -2,8 +2,10 @@
 
 from math import isfinite
 
-from pyoptionpricer.domain import OptionType
+from pyoptionpricer.domain import ExerciseStyle, OptionProduct, OptionType
+from pyoptionpricer.models import PricingModel
 from pyoptionpricer.models.tree import calculate_crr_tree_parameters
+from pyoptionpricer.pricing.engines import EngineCapabilities, ModelCapabilityValidator
 from pyoptionpricer.pricing.exercise import exercise_policy
 from pyoptionpricer.pricing.greeks import GreekCalculationError, calculate_tree_greeks
 from pyoptionpricer.pricing.requests import PricingRequest
@@ -17,11 +19,21 @@ class PricingError(RuntimeError):
 class CRRPricingEngine:
     """Price complete provider-neutral requests with a recombining CRR tree."""
 
-    model_name = "CRR"
+    model = PricingModel.CRR
+    model_name = model.value
+    capabilities = EngineCapabilities(
+        products=frozenset({OptionProduct.VANILLA}),
+        exercise_styles=frozenset(
+            {ExerciseStyle.EUROPEAN, ExerciseStyle.AMERICAN}
+        ),
+        supports_path_dependency=False,
+        supports_early_exercise=True,
+    )
 
     def price(self, request: PricingRequest) -> PricingResult:
         if not isinstance(request, PricingRequest):
             raise TypeError("request must be a PricingRequest")
+        ModelCapabilityValidator().validate_request(self, request)
 
         inputs = request.inputs
         tree = calculate_crr_tree_parameters(

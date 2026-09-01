@@ -6,6 +6,11 @@ from math import isfinite
 
 from pyoptionpricer.domain import OptionContract
 from pyoptionpricer.market import MarketObservation, MarketSnapshot
+from pyoptionpricer.models import (
+    ModelSelection,
+    PricingModel,
+    PricingModelConfiguration,
+)
 from pyoptionpricer.models.tree import CRRModelParameters
 
 
@@ -38,11 +43,13 @@ class PricingInputs:
 
 @dataclass(frozen=True, slots=True)
 class PricingRequest:
-    """A contract, normalized market state, and explicit CRR configuration."""
+    """A contract, normalized market state, and model-specific configuration."""
 
     instrument: OptionContract
     market: MarketSnapshot
-    model_parameters: CRRModelParameters = field(default_factory=CRRModelParameters)
+    model_parameters: PricingModelConfiguration = field(
+        default_factory=CRRModelParameters
+    )
     contract_source: str = "option_contract"
     inputs: PricingInputs = field(init=False)
 
@@ -51,14 +58,28 @@ class PricingRequest:
             raise InvalidPricingRequestError("instrument must be an OptionContract")
         if not isinstance(self.market, MarketSnapshot):
             raise InvalidPricingRequestError("market must be a MarketSnapshot")
-        if not isinstance(self.model_parameters, CRRModelParameters):
+        if not isinstance(self.model_parameters, PricingModelConfiguration):
             raise InvalidPricingRequestError(
-                "model_parameters must be CRRModelParameters"
+                "model_parameters must implement PricingModelConfiguration"
+            )
+        if not isinstance(self.model_parameters.model, PricingModel):
+            raise InvalidPricingRequestError(
+                "model_parameters.model must be a PricingModel"
             )
         if not isinstance(self.contract_source, str) or not self.contract_source.strip():
             raise InvalidPricingRequestError("contract_source must be non-empty")
         object.__setattr__(self, "contract_source", self.contract_source.strip())
         object.__setattr__(self, "inputs", self._resolve_inputs())
+
+    @property
+    def model(self) -> PricingModel:
+        """Return the canonical model selected by the configuration type."""
+        return self.model_parameters.model
+
+    @property
+    def model_selection(self) -> ModelSelection:
+        """Expose the selected model and its isolated configuration together."""
+        return ModelSelection(self.model, self.model_parameters)
 
     def _resolve_inputs(self) -> PricingInputs:
         maturity_days = (self.instrument.expiry - self.market.valuation_datetime.date()).days

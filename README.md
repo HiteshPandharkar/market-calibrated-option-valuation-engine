@@ -67,6 +67,7 @@ From an uninstalled source checkout, prefix the equivalent module command with
 - CRR implied-volatility calibration to the market midpoint
 - convergence runs and machine-readable pricing diagnostics
 - end-to-end single-contract workflows with complete input provenance
+- canonical model selection with explicit engine capability validation
 - deterministic, provider-neutral CSV and Upstox test paths
 
 Market implied volatility is preferred when a provider supplies a reliable
@@ -107,6 +108,7 @@ copied into global environment state.
 
 - [End-to-end workflow](docs/end_to_end_workflow.md)
 - [CRR pricing, Greeks, market comparison, and implied volatility](docs/crr_pricing.md)
+- [Pricing models, registry selection, and capabilities](docs/pricing_models.md)
 - [Market-data and volatility conventions](docs/market_data.md)
 - [Convergence and diagnostics](docs/diagnostics.md)
 - [Upstox mappings and capability limits](docs/vendor_mapping_upstox.md)

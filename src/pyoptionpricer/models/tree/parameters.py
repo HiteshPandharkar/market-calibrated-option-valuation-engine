@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass
 from math import isfinite
+from typing import ClassVar
+
+from pyoptionpricer.models.model import PricingModel
 
 
 class InvalidTreeParametersError(ValueError):
@@ -12,6 +15,7 @@ class InvalidTreeParametersError(ValueError):
 class CRRModelParameters:
     """User-selected CRR configuration."""
 
+    model: ClassVar[PricingModel] = PricingModel.CRR
     steps: int = 500
 
     def __post_init__(self) -> None:

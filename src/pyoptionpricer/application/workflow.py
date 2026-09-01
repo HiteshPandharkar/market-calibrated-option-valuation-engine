@@ -33,13 +33,14 @@ from pyoptionpricer.market.data import (
     OptionChainEntry,
     OptionChainProvider,
 )
+from pyoptionpricer.models import PricingModel, PricingModelConfiguration
 from pyoptionpricer.models.tree import CRRModelParameters
 from pyoptionpricer.pricing import (
     CRRImpliedVolatilitySolver,
-    CRRPricingEngine,
     DiagnosticReport,
     ImpliedVolatilityResult,
     MarketComparison,
+    PricingEngineRegistry,
     PricingRequest,
     PricingResult,
     compare_to_market,
@@ -131,7 +132,9 @@ class SingleContractValuationRequest:
 
     selection: ContractSelection
     valuation_datetime: datetime
-    model_parameters: CRRModelParameters = field(default_factory=CRRModelParameters)
+    model_parameters: PricingModelConfiguration = field(
+        default_factory=CRRModelParameters
+    )
     volatility: VolatilitySelection = field(default_factory=VolatilitySelection)
     yield_curve: YieldCurve | None = None
     dividend_data: DividendYield | None = None
@@ -149,8 +152,12 @@ class SingleContractValuationRequest:
             or self.valuation_datetime.utcoffset() is None
         ):
             raise ValueError("valuation_datetime must be timezone-aware")
-        if not isinstance(self.model_parameters, CRRModelParameters):
-            raise TypeError("model_parameters must be CRRModelParameters")
+        if not isinstance(self.model_parameters, PricingModelConfiguration):
+            raise TypeError(
+                "model_parameters must implement PricingModelConfiguration"
+            )
+        if not isinstance(self.model_parameters.model, PricingModel):
+            raise TypeError("model_parameters.model must be a PricingModel")
         if not isinstance(self.volatility, VolatilitySelection):
             raise TypeError("volatility must be a VolatilitySelection")
         if self.yield_curve is not None and not isinstance(
@@ -282,14 +289,13 @@ class SingleContractValuationService:
         self,
         provider: MarketDataProvider,
         *,
-        pricing_engine: CRRPricingEngine | None = None,
         implied_volatility_solver: CRRImpliedVolatilitySolver | None = None,
         contract_resolver: CanonicalContractResolver | None = None,
     ) -> None:
         if not isinstance(provider, MarketDataProvider):
             raise TypeError("provider must be a MarketDataProvider")
         self._provider = provider
-        self._pricing_engine = pricing_engine or CRRPricingEngine()
+        self._pricing_engine_registry = PricingEngineRegistry()
         self._implied_volatility_solver = (
             implied_volatility_solver or CRRImpliedVolatilitySolver()
         )
@@ -343,7 +349,7 @@ class SingleContractValuationService:
                 else "option_contract"
             ),
         )
-        pricing_result = self._pricing_engine.price(pricing_request)
+        pricing_result = self._pricing_engine_registry.price(pricing_request)
         comparison = compare_to_market(pricing_result.price, quote)
         implied_volatility = self._implied_volatility_solver.solve(pricing_request)
         diagnostics = diagnose_pricing_result(pricing_request, pricing_result)

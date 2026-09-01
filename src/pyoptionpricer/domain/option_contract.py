@@ -21,6 +21,16 @@ class AssetClass(str, Enum):
     INDEX = "INDEX"
 
 
+class OptionProduct(str, Enum):
+    """Canonical option product families used for model capability checks."""
+
+    VANILLA = "VANILLA"
+    DIGITAL = "DIGITAL"
+    BARRIER = "BARRIER"
+    ASIAN = "ASIAN"
+    LOOKBACK = "LOOKBACK"
+
+
 class Currency(str, Enum):
     INR = "INR"
     USD = "USD"
@@ -71,3 +81,8 @@ class OptionContract:
 
         object.__setattr__(self, "underlying", self.underlying.strip())
         object.__setattr__(self, "strike", float(self.strike))
+
+    @property
+    def product(self) -> OptionProduct:
+        """Identify the listed contract as a plain-vanilla option."""
+        return OptionProduct.VANILLA

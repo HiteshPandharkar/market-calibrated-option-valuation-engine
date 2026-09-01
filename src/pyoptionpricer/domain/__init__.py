@@ -6,6 +6,7 @@ from pyoptionpricer.domain.option_contract import (
     ExerciseStyle,
     InvalidContractError,
     OptionContract,
+    OptionProduct,
     OptionType,
 )
 
@@ -15,5 +16,6 @@ __all__ = [
     "ExerciseStyle",
     "InvalidContractError",
     "OptionContract",
+    "OptionProduct",
     "OptionType",
 ]

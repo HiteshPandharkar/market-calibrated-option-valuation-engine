@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from pyoptionpricer.domain import Currency
-from pyoptionpricer.models.tree import CRRModelParameters, CRRTreeParameters
+from pyoptionpricer.models import PricingModel, PricingModelConfiguration
+from pyoptionpricer.models.tree import CRRTreeParameters
 from pyoptionpricer.pricing.greeks import OptionGreeks
 from pyoptionpricer.pricing.requests import PricingInputs
 
@@ -24,8 +25,13 @@ class PricingResult:
     price: float
     currency: Currency
     model_name: str
-    model_parameters: CRRModelParameters
+    model_parameters: PricingModelConfiguration
     valuation_datetime: datetime
     inputs: PricingInputs
     greeks: OptionGreeks
     diagnostics: PricingDiagnostics
+
+    @property
+    def model(self) -> PricingModel:
+        """Return the canonical identifier associated with result metadata."""
+        return self.model_parameters.model

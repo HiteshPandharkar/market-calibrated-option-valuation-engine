@@ -15,6 +15,18 @@ from pyoptionpricer.pricing.diagnostics import (
     diagnose_provider_error,
 )
 from pyoptionpricer.pricing.greeks import GreekCalculationError, OptionGreeks
+from pyoptionpricer.pricing.engine_router import (
+    PRICING_ENGINE_ROUTES,
+    build_available_pricing_engine,
+)
+from pyoptionpricer.pricing.engine_registry import PricingEngineRegistry
+from pyoptionpricer.pricing.engines import (
+    EngineCapabilities,
+    ModelCapabilityValidator,
+    PricingEngine,
+    UnsupportedInstrumentModelCombinationError,
+    UnsupportedModelError,
+)
 from pyoptionpricer.pricing.implied_volatility import (
     CRRImpliedVolatilitySolver,
     ImpliedVolatilityConfig,
@@ -47,6 +59,7 @@ __all__ = [
     "DiagnosticCode",
     "DiagnosticReport",
     "DiagnosticStatus",
+    "EngineCapabilities",
     "GreekCalculationError",
     "InputProvenance",
     "ImpliedVolatilityConfig",
@@ -56,12 +69,19 @@ __all__ = [
     "InvalidPricingRequestError",
     "MarketComparison",
     "MarketComparisonError",
+    "ModelCapabilityValidator",
     "OptionGreeks",
+    "PRICING_ENGINE_ROUTES",
+    "build_available_pricing_engine",
     "PricingDiagnostics",
+    "PricingEngine",
+    "PricingEngineRegistry",
     "PricingError",
     "PricingInputs",
     "PricingRequest",
     "PricingResult",
+    "UnsupportedInstrumentModelCombinationError",
+    "UnsupportedModelError",
     "compare_to_market",
     "diagnose_pricing_result",
     "diagnose_provider_error",
