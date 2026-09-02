@@ -72,5 +72,24 @@ convention. `BSMPricingDiagnostics.calculation_mode` records whether the
 analytical formula or deterministic limit was used, together with discount
 factors and `d1`/`d2` when defined.
 
-Monte Carlo remains reserved for its later implementation; selecting it fails
-explicitly.
+Monte Carlo supports European vanilla calls and puts under risk-neutral
+geometric Brownian motion and is selected with `MonteCarloModelParameters`.
+The configuration records the path count, time steps, integer seed, confidence
+level, and whether antithetic variates are enabled. Antithetic runs require an
+even path count and at least two complete pairs so uncertainty can be estimated
+from independent pair averages.
+
+Simulation responsibilities are separated under
+`pyoptionpricer.models.monte_carlo`: `PythonRandomNumberGenerator` owns isolated
+seeded random state, `GeometricBrownianMotion` applies exact finite-time GBM
+transitions, `PathGenerator` streams complete paths, and
+`TerminalPathPayoffEvaluator` adapts the existing terminal-payoff contract.
+These components contain no market-provider behavior and are reusable by later
+path-dependent products.
+
+`MonteCarloPricingDiagnostics` returns the estimate, standard error, two-sided
+normal confidence interval, actual path and time-step counts, seed, confidence
+level, and variance-reduction method. Antithetic standard errors use pair
+averages as the independent observations. Fixed-seed runs are deterministic on
+the same supported Python runtime. The shared result also includes
+common-random-number finite-difference Delta, Gamma, and annual Theta.

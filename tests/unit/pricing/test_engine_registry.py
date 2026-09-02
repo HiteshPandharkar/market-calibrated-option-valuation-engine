@@ -11,6 +11,7 @@ from pyoptionpricer import (
     ExerciseStyle,
     ModelCapabilityValidator,
     ModelSelection,
+    MonteCarloPricingEngine,
     OptionProduct,
     OptionType,
     PRICING_ENGINE_ROUTES,
@@ -84,7 +85,11 @@ def test_registry_selects_crr_by_canonical_model_and_dispatches() -> None:
     request = pricing_request()
 
     assert registry.models == frozenset(
-        {PricingModel.CRR, PricingModel.BLACK_SCHOLES_MERTON}
+        {
+            PricingModel.CRR,
+            PricingModel.BLACK_SCHOLES_MERTON,
+            PricingModel.MONTE_CARLO,
+        }
     )
     assert isinstance(registry.get(PricingModel.CRR), CRRPricingEngine)
     result = registry.price(request)
@@ -100,6 +105,10 @@ def test_router_builds_only_the_model_selected_by_string_value() -> None:
         PricingModel.BLACK_SCHOLES_MERTON.value
     )
     assert isinstance(bsm_engine, BSMPricingEngine)
+    assert isinstance(
+        build_available_pricing_engine(PricingModel.MONTE_CARLO),
+        MonteCarloPricingEngine,
+    )
 
 
 def test_registry_constructs_selected_engine_lazily(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -129,12 +138,14 @@ def test_engine_router_is_the_immutable_repository_catalogue() -> None:
     assert set(PRICING_ENGINE_ROUTES) == {
         PricingModel.CRR,
         PricingModel.BLACK_SCHOLES_MERTON,
+        PricingModel.MONTE_CARLO,
     }
     assert PRICING_ENGINE_ROUTES[PricingModel.CRR] is CRRPricingEngine
     assert (
         PRICING_ENGINE_ROUTES[PricingModel.BLACK_SCHOLES_MERTON]
         is BSMPricingEngine
     )
+    assert PRICING_ENGINE_ROUTES[PricingModel.MONTE_CARLO] is MonteCarloPricingEngine
 
     with pytest.raises(TypeError):
         PRICING_ENGINE_ROUTES[PricingModel.MONTE_CARLO] = (  # type: ignore[index]
@@ -142,15 +153,19 @@ def test_engine_router_is_the_immutable_repository_catalogue() -> None:
         )
 
 
-def test_registry_fails_explicitly_when_selected_engine_is_unavailable() -> None:
+def test_registry_fails_explicitly_when_selected_engine_is_unknown() -> None:
     registry = PricingEngineRegistry()
 
     with pytest.raises(UnsupportedModelError) as raised:
-        registry.get(PricingModel.MONTE_CARLO)
+        registry.get("UNKNOWN")
 
-    assert raised.value.model is PricingModel.MONTE_CARLO
+    assert raised.value.model == "UNKNOWN"
     assert raised.value.available_models == frozenset(
-        {PricingModel.CRR, PricingModel.BLACK_SCHOLES_MERTON}
+        {
+            PricingModel.CRR,
+            PricingModel.BLACK_SCHOLES_MERTON,
+            PricingModel.MONTE_CARLO,
+        }
     )
 
 

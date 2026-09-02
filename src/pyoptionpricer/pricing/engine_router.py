@@ -11,6 +11,7 @@ from typing import Final
 
 from pyoptionpricer.models import PricingModel
 from pyoptionpricer.models.bsm.engine import BSMPricingEngine
+from pyoptionpricer.models.monte_carlo.engine import MonteCarloPricingEngine
 from pyoptionpricer.pricing.engines import EngineCapabilities, PricingEngine
 from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
 
@@ -23,6 +24,7 @@ PRICING_ENGINE_ROUTES: Final[Mapping[PricingModel, EngineBuilder]] = (
         {
             PricingModel.CRR: CRRPricingEngine,
             PricingModel.BLACK_SCHOLES_MERTON: BSMPricingEngine,
+            PricingModel.MONTE_CARLO: MonteCarloPricingEngine,
         }
     )
 )

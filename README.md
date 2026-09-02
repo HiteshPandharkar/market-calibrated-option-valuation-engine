@@ -4,7 +4,8 @@ PyOptionPricer is a provider-neutral Python engine for valuing European,
 American, Bermudan, and discrete-node barrier options with the
 Cox-Ross-Rubinstein (CRR) binomial model and European
 vanilla and cash-or-nothing digital options with analytical Black-Scholes-Merton
-(BSM). It combines normalized market data
+(BSM), plus seeded Monte Carlo valuation of European vanilla options under
+risk-neutral geometric Brownian motion. It combines normalized market data
 with auditable input provenance, tree-based Greeks, market comparison,
 implied-volatility calibration, convergence analysis, and structured
 diagnostics.
@@ -66,6 +67,7 @@ From an uninstalled source checkout, prefix the equivalent module command with
 - CRR valuation for up/down knock-in and knock-out European vanilla options,
   with explicit node monitoring, rebate timing, and grid-alignment diagnostics
 - analytical BSM valuation and Delta/Gamma/Theta/Vega/Rho for European vanilla and cash-or-nothing digital calls and puts
+- reproducible Monte Carlo valuation with exact GBM paths, antithetic variates, standard errors, and confidence intervals
 - configurable digital cash payouts with a strict, zero-payoff strike boundary
 - maturity-aware yield curves and continuous dividend yields
 - historical, EWMA, and market-surface volatility selection

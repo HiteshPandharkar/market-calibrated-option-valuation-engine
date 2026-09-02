@@ -28,6 +28,7 @@ from pyoptionpricer.models.bsm import (
     CashDigitalBSMProductPricer,
     VanillaBSMProductPricer,
 )
+from pyoptionpricer.models.monte_carlo.engine import MonteCarloPricingEngine
 from pyoptionpricer.pricing.engine_registry import PricingEngineRegistry
 from pyoptionpricer.pricing.engines import (
     EngineCapabilities,
@@ -57,6 +58,7 @@ from pyoptionpricer.pricing.requests import (
 from pyoptionpricer.pricing.results import (
     BarrierPricingDiagnostics,
     BSMPricingDiagnostics,
+    MonteCarloPricingDiagnostics,
     PricingDiagnostics,
     PricingResult,
 )
@@ -68,6 +70,8 @@ __all__ = [
     "CRRConvergenceRunner",
     "BSMPricingDiagnostics",
     "BSMPricingEngine",
+    "MonteCarloPricingDiagnostics",
+    "MonteCarloPricingEngine",
     "BSMCalculation",
     "BSMInputs",
     "BSMProductPricer",

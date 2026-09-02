@@ -9,11 +9,17 @@ from pyoptionpricer.models.analytical import (
     BSMModelParameters,
     InvalidBSMParametersError,
 )
+from pyoptionpricer.models.monte_carlo.parameters import (
+    InvalidMonteCarloParametersError,
+    MonteCarloModelParameters,
+)
 
 __all__ = [
     "BSMModelParameters",
     "InvalidBSMParametersError",
+    "InvalidMonteCarloParametersError",
     "ModelSelection",
+    "MonteCarloModelParameters",
     "PricingModel",
     "PricingModelConfiguration",
 ]

@@ -71,6 +71,46 @@ class BSMPricingDiagnostics:
 
 
 @dataclass(frozen=True, slots=True)
+class MonteCarloPricingDiagnostics:
+    """Estimate uncertainty and reproducibility metadata for a simulation."""
+
+    estimated_price: float
+    standard_error: float
+    confidence_interval: tuple[float, float]
+    number_of_paths: int
+    time_steps: int
+    seed: int
+    variance_reduction_method: str
+    confidence_level: float
+
+    def __post_init__(self) -> None:
+        lower, upper = self.confidence_interval
+        if any(
+            not isfinite(value)
+            for value in (
+                self.estimated_price,
+                self.standard_error,
+                lower,
+                upper,
+                self.confidence_level,
+            )
+        ):
+            raise ValueError("Monte Carlo statistics must be finite")
+        if self.estimated_price < 0 or self.standard_error < 0:
+            raise ValueError(
+                "Monte Carlo estimate and standard error must be non-negative"
+            )
+        if lower > self.estimated_price or upper < self.estimated_price:
+            raise ValueError("confidence_interval must contain estimated_price")
+        if self.number_of_paths <= 0 or self.time_steps <= 0:
+            raise ValueError("Monte Carlo path and time-step counts must be positive")
+        if self.variance_reduction_method not in {"NONE", "ANTITHETIC_VARIATES"}:
+            raise ValueError("unsupported variance_reduction_method")
+        if not 0.0 < self.confidence_level < 1.0:
+            raise ValueError("confidence_level must be strictly between zero and one")
+
+
+@dataclass(frozen=True, slots=True)
 class PricingResult:
     """Structured theoretical value and its reproducibility metadata."""
 
@@ -82,7 +122,10 @@ class PricingResult:
     inputs: PricingInputs
     greeks: OptionGreeks
     diagnostics: (
-        PricingDiagnostics | BarrierPricingDiagnostics | BSMPricingDiagnostics
+        PricingDiagnostics
+        | BarrierPricingDiagnostics
+        | BSMPricingDiagnostics
+        | MonteCarloPricingDiagnostics
     )
 
     @property
