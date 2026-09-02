@@ -1,6 +1,6 @@
 # CRR pricing conventions
 
-The CRR engine prices European and American vanilla and cash-or-nothing digital
+The CRR engine prices European, American, and Bermudan vanilla and cash-or-nothing digital
 calls and puts with a recombining Cox-Ross-Rubinstein tree. A pricing request contains an immutable
 `VanillaOptionContract` or another supported `OptionContract`, a normalized
 `MarketSnapshot`, and `CRRModelParameters`.
@@ -31,7 +31,19 @@ identified explicitly as a model assumption.
 
 European options use discounted risk-neutral continuation at every
 pre-expiry node. American options use the greater of continuation and
-intrinsic value at every node. The structured result contains the price,
+intrinsic value at every node. Bermudan options use intrinsic value only at
+the dates in their immutable `BermudanExercise` schedule; expiry must be
+included explicitly in that schedule.
+
+Exercise dates are mapped using exact calendar-day alignment with the CRR
+grid. For a maturity of `D` calendar days and `N` steps, a date `d` days after
+valuation maps to step `d * N / D` only when that value is an integer. The
+valuation date maps to step zero, expiry maps to step `N`, and already-lapsed
+dates are ignored. An active date that is not exactly aligned causes pricing
+to fail; the engine never rounds to a nearby node or applies a hidden
+tolerance.
+
+The structured result contains the price,
 currency, model configuration, resolved inputs, derived tree parameters, and
 the number of nodes at which early exercise was selected, and tree-based
 Delta, Gamma, and Theta.

@@ -5,6 +5,7 @@ import pytest
 
 from pyoptionpricer import (
     AssetClass,
+    BermudanExercise,
     BSMModelParameters,
     BSMPricingDiagnostics,
     BSMPricingEngine,
@@ -181,6 +182,28 @@ def test_registry_rejects_american_vanilla_for_bsm() -> None:
 
     assert raised.value.model is PricingModel.BLACK_SCHOLES_MERTON
     assert raised.value.exercise_style is ExerciseStyle.AMERICAN
+
+
+def test_bsm_rejects_bermudan_vanilla_explicitly() -> None:
+    base_request = request()
+    contract = VanillaOptionContract(
+        "ACME",
+        100.0,
+        EXPIRY,
+        OptionType.PUT,
+        ExerciseStyle.BERMUDAN,
+        AssetClass.EQUITY,
+        exercise_schedule=BermudanExercise((EXPIRY,)),
+    )
+    pricing_request = PricingRequest(
+        contract, base_request.market, BSMModelParameters()
+    )
+
+    with pytest.raises(UnsupportedInstrumentModelCombinationError) as raised:
+        BSMPricingEngine().price(pricing_request)
+
+    assert raised.value.model is PricingModel.BLACK_SCHOLES_MERTON
+    assert raised.value.exercise_style is ExerciseStyle.BERMUDAN
 
 
 @pytest.mark.parametrize("option_type", [OptionType.CALL, OptionType.PUT])

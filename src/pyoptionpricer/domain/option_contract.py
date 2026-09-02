@@ -19,6 +19,7 @@ class OptionType(str, Enum):
 class ExerciseStyle(str, Enum):
     EUROPEAN = "EUROPEAN"
     AMERICAN = "AMERICAN"
+    BERMUDAN = "BERMUDAN"
 
 
 class AssetClass(str, Enum):
@@ -49,6 +50,31 @@ class InvalidContractError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class BermudanExercise:
+    """Contractual dates on which a Bermudan option may be exercised."""
+
+    exercise_dates: tuple[date, ...]
+
+    def __post_init__(self) -> None:
+        try:
+            dates = tuple(self.exercise_dates)
+        except TypeError as error:
+            raise InvalidContractError(
+                "exercise_dates must be an iterable of dates"
+            ) from error
+        if not dates:
+            raise InvalidContractError("exercise_dates must not be empty")
+        if any(
+            not isinstance(item, date) or isinstance(item, datetime)
+            for item in dates
+        ):
+            raise InvalidContractError("exercise_dates must contain only dates")
+        if len(set(dates)) != len(dates):
+            raise InvalidContractError("exercise_dates must not contain duplicates")
+        object.__setattr__(self, "exercise_dates", tuple(sorted(dates)))
+
+
+@dataclass(frozen=True, slots=True)
 class OptionContract(ABC):
     """Common static terms shared by supported option products."""
 
@@ -61,6 +87,7 @@ class OptionContract(ABC):
     exchange: str | None = None
     contract_symbol: str | None = None
     currency: Currency = Currency.INR
+    exercise_schedule: BermudanExercise | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.underlying, str) or not self.underlying.strip():
@@ -79,6 +106,23 @@ class OptionContract(ABC):
             raise InvalidContractError("asset_class must be an AssetClass")
         if not isinstance(self.currency, Currency):
             raise InvalidContractError("currency must be a Currency")
+        if self.exercise_style is ExerciseStyle.BERMUDAN:
+            if not isinstance(self.exercise_schedule, BermudanExercise):
+                raise InvalidContractError(
+                    "Bermudan contracts require a BermudanExercise exercise_schedule"
+                )
+            if self.expiry not in self.exercise_schedule.exercise_dates:
+                raise InvalidContractError(
+                    "Bermudan exercise_schedule must include expiry explicitly"
+                )
+            if any(item > self.expiry for item in self.exercise_schedule.exercise_dates):
+                raise InvalidContractError(
+                    "Bermudan exercise dates must not occur after expiry"
+                )
+        elif self.exercise_schedule is not None:
+            raise InvalidContractError(
+                "exercise_schedule is only valid for Bermudan contracts"
+            )
         for name in ("exchange", "contract_symbol"):
             value = getattr(self, name)
             if value is not None and (not isinstance(value, str) or not value.strip()):

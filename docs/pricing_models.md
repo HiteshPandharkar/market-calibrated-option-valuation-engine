@@ -29,7 +29,9 @@ product family, exercise style, and reason as structured attributes.
 product identifier and terminal payoff; neither concrete product is modeled as
 a subtype of the other.
 
-CRR supports European and American vanilla and cash-or-nothing digital options.
+CRR supports European, American, and Bermudan vanilla and cash-or-nothing
+digital options. Bermudan contracts carry an explicit, normalized exercise
+schedule, and contractual dates must align exactly with the selected CRR grid.
 Black-Scholes-Merton (BSM) supports European vanilla and cash-or-nothing digital
 calls and puts and is selected with
 `BSMModelParameters`. BSM uses continuous compounding for the risk-free rate

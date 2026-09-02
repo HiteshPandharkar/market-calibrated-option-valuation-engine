@@ -17,6 +17,7 @@ from pyoptionpricer.application import (
 )
 from pyoptionpricer.domain import (
     AssetClass,
+    BermudanExercise,
     CashOrNothingPayoff,
     Currency,
     DigitalOptionContract,
@@ -92,6 +93,7 @@ from pyoptionpricer.pricing import (
 
 __all__ = [
     "AssetClass",
+    "BermudanExercise",
     "CashOrNothingPayoff",
     "BSMModelParameters",
     "BSMPricingDiagnostics",

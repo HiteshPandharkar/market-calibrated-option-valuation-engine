@@ -218,9 +218,17 @@ def _satisfies_no_arbitrage(request: PricingRequest, result: PricingResult) -> b
     strike = inputs.strike.value
     maturity = inputs.maturity.value
     payoff = request.instrument.payoff
+    style = request.instrument.exercise_style
+    has_early_exercise = style is not ExerciseStyle.EUROPEAN
+    can_exercise_at_valuation = style is ExerciseStyle.AMERICAN or (
+        style is ExerciseStyle.BERMUDAN
+        and request.instrument.exercise_schedule is not None
+        and request.market.valuation_datetime.date()
+        in request.instrument.exercise_schedule.exercise_dates
+    )
     if isinstance(payoff, CashOrNothingPayoff):
-        if request.instrument.exercise_style is ExerciseStyle.AMERICAN:
-            lower = payoff.value_at(spot)
+        if has_early_exercise:
+            lower = payoff.value_at(spot) if can_exercise_at_valuation else 0.0
             upper = payoff.payout
         else:
             lower = 0.0
@@ -230,25 +238,18 @@ def _satisfies_no_arbitrage(request: PricingRequest, result: PricingResult) -> b
         tolerance = 1e-12 * max(1.0, upper)
         return factor_condition and lower - tolerance <= result.price <= upper + tolerance
 
-    if request.instrument.exercise_style is ExerciseStyle.AMERICAN:
-        intrinsic = (
-            spot - strike
-            if request.instrument.option_type is OptionType.CALL
-            else strike - spot
-        )
-        lower = max(
-            intrinsic,
-            0.0,
-        )
-        upper = spot if request.instrument.option_type is OptionType.CALL else strike
+    discounted_spot = spot * exp(-inputs.dividend_yield.value * maturity)
+    discounted_strike = strike * exp(-inputs.risk_free_rate.value * maturity)
+    if request.instrument.option_type is OptionType.CALL:
+        lower = max(discounted_spot - discounted_strike, 0.0)
+        upper = discounted_spot
     else:
-        discounted_spot = spot * exp(-inputs.dividend_yield.value * maturity)
-        discounted_strike = strike * exp(-inputs.risk_free_rate.value * maturity)
-        if request.instrument.option_type is OptionType.CALL:
-            lower = max(discounted_spot - discounted_strike, 0.0)
-            upper = discounted_spot
-        else:
-            lower = max(discounted_strike - discounted_spot, 0.0)
-            upper = discounted_strike
+        lower = max(discounted_strike - discounted_spot, 0.0)
+        upper = discounted_strike
+    if has_early_exercise:
+        intrinsic = payoff.value_at(spot)
+        if can_exercise_at_valuation:
+            lower = max(lower, intrinsic)
+        upper = spot if request.instrument.option_type is OptionType.CALL else strike
     tolerance = 1e-12 * max(1.0, upper)
     return factor_condition and lower - tolerance <= result.price <= upper + tolerance

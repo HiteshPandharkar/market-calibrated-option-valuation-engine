@@ -1,10 +1,11 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from math import erf, exp, log, pi, sqrt
 
 import pytest
 
 from pyoptionpricer import (
     AssetClass,
+    BermudanExercise,
     CRRModelParameters,
     CRRPricingEngine,
     Currency,
@@ -40,6 +41,7 @@ def request(
     volatility: object = 0.20,
     steps: int = 500,
     expiry: date = EXPIRY,
+    exercise_schedule: BermudanExercise | None = None,
 ) -> PricingRequest:
     contract = VanillaOptionContract(
         "ACME",
@@ -49,6 +51,7 @@ def request(
         exercise_style,
         AssetClass.EQUITY,
         currency=Currency.USD,
+        exercise_schedule=exercise_schedule,
     )
     timestamp = datetime(2026, 8, 30, 11, 59, tzinfo=UTC)
     snapshot = MarketSnapshot(
@@ -137,6 +140,68 @@ def test_non_dividend_american_call_matches_european_call() -> None:
 
     assert american.price == pytest.approx(european.price)
     assert american.diagnostics.early_exercise_nodes == 0
+
+
+def test_bermudan_put_is_bounded_by_european_and_american_prices() -> None:
+    schedule = BermudanExercise(
+        tuple(
+            VALUATION.date() + timedelta(days=offset)
+            for offset in (91, 182, 273, 365)
+        )
+    )
+    engine = CRRPricingEngine()
+
+    european = engine.price(
+        request(OptionType.PUT, ExerciseStyle.EUROPEAN, spot=80.0, steps=365)
+    )
+    bermudan = engine.price(
+        request(
+            OptionType.PUT,
+            ExerciseStyle.BERMUDAN,
+            spot=80.0,
+            steps=365,
+            exercise_schedule=schedule,
+        )
+    )
+    american = engine.price(
+        request(OptionType.PUT, ExerciseStyle.AMERICAN, spot=80.0, steps=365)
+    )
+
+    assert european.price < bermudan.price < american.price
+    assert bermudan.diagnostics.early_exercise_nodes > 0
+
+
+def test_bermudan_valuation_date_exercise_maps_to_root_node() -> None:
+    schedule = BermudanExercise((VALUATION.date(), EXPIRY))
+
+    result = CRRPricingEngine().price(
+        request(
+            OptionType.PUT,
+            ExerciseStyle.BERMUDAN,
+            spot=20.0,
+            steps=365,
+            exercise_schedule=schedule,
+        )
+    )
+
+    assert result.price == pytest.approx(80.0)
+    assert result.diagnostics.early_exercise_nodes == 1
+
+
+def test_bermudan_rejects_exercise_date_not_exactly_on_tree_grid() -> None:
+    schedule = BermudanExercise(
+        (VALUATION.date() + timedelta(days=90), EXPIRY)
+    )
+
+    with pytest.raises(PricingError, match="does not align exactly"):
+        CRRPricingEngine().price(
+            request(
+                OptionType.PUT,
+                ExerciseStyle.BERMUDAN,
+                steps=100,
+                exercise_schedule=schedule,
+            )
+        )
 
 
 def test_pricing_request_resolves_traceable_inputs() -> None:

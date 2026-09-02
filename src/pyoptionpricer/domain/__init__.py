@@ -2,6 +2,7 @@
 
 from pyoptionpricer.domain.option_contract import (
     AssetClass,
+    BermudanExercise,
     Currency,
     DigitalOptionContract,
     ExerciseStyle,
@@ -20,6 +21,7 @@ from pyoptionpricer.domain.payoffs import (
 
 __all__ = [
     "AssetClass",
+    "BermudanExercise",
     "Currency",
     "CashOrNothingPayoff",
     "DigitalOptionContract",

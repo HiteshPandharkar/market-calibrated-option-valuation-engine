@@ -169,7 +169,12 @@ def test_registry_does_not_expose_runtime_engine_registration() -> None:
 
 
 @pytest.mark.parametrize(
-    "exercise_style", [ExerciseStyle.EUROPEAN, ExerciseStyle.AMERICAN]
+    "exercise_style",
+    [
+        ExerciseStyle.EUROPEAN,
+        ExerciseStyle.AMERICAN,
+        ExerciseStyle.BERMUDAN,
+    ],
 )
 def test_crr_capabilities_accept_supported_vanilla_styles(
     exercise_style: ExerciseStyle,

@@ -57,6 +57,9 @@ put:  max(K exp(-rT) - S exp(-qT), 0) <= P <= K exp(-rT)
 For American options, the lower bound is intrinsic value; the upper bound is
 spot for a call and strike for a put.
 
+Bermudan options use the European lower bound unless valuation day is an
+eligible exercise date. Their upper bound is the corresponding American bound.
+
 ## Provider failures
 
 `diagnose_provider_error` maps canonical provider exceptions to failed

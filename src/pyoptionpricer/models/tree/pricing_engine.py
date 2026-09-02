@@ -1,4 +1,4 @@
-"""Backward-induction pricing for supported European and American payoffs."""
+"""Backward-induction pricing for supported exercise styles and payoffs."""
 
 from math import isfinite
 
@@ -7,7 +7,11 @@ from pyoptionpricer.models import PricingModel
 from pyoptionpricer.models.tree import calculate_crr_tree_parameters
 from pyoptionpricer.pricing.engines import EngineCapabilities, ModelCapabilityValidator
 from pyoptionpricer.pricing.errors import PricingError
-from pyoptionpricer.pricing.exercise import exercise_policy
+from pyoptionpricer.pricing.exercise import (
+    ExerciseScheduleMappingError,
+    exercise_policy,
+    map_bermudan_exercise_steps,
+)
 from pyoptionpricer.pricing.greeks import GreekCalculationError, calculate_tree_greeks
 from pyoptionpricer.pricing.requests import PricingRequest
 from pyoptionpricer.pricing.results import PricingDiagnostics, PricingResult
@@ -21,7 +25,11 @@ class CRRPricingEngine:
     capabilities = EngineCapabilities(
         products=frozenset({OptionProduct.VANILLA, OptionProduct.DIGITAL}),
         exercise_styles=frozenset(
-            {ExerciseStyle.EUROPEAN, ExerciseStyle.AMERICAN}
+            {
+                ExerciseStyle.EUROPEAN,
+                ExerciseStyle.AMERICAN,
+                ExerciseStyle.BERMUDAN,
+            }
         ),
         supports_path_dependency=False,
         supports_early_exercise=True,
@@ -62,7 +70,21 @@ class CRRPricingEngine:
         first_level_values: tuple[float, float] | None = None
         second_level_values: tuple[float, float, float] | None = None
         probability = tree.risk_neutral_probability
-        policy = exercise_policy(request.instrument.exercise_style)
+        bermudan_steps = frozenset()
+        if request.instrument.exercise_style is ExerciseStyle.BERMUDAN:
+            schedule = request.instrument.exercise_schedule
+            if schedule is None:  # Protected by OptionContract validation.
+                raise PricingError("Bermudan contract requires an exercise schedule")
+            try:
+                bermudan_steps = map_bermudan_exercise_steps(
+                    schedule,
+                    request.market.valuation_datetime.date(),
+                    request.instrument.expiry,
+                    steps,
+                )
+            except ExerciseScheduleMappingError as error:
+                raise PricingError(str(error)) from error
+        policy = exercise_policy(request.instrument.exercise_style, bermudan_steps)
         for time_index in range(steps - 1, -1, -1):
             next_values: list[float] = []
             for up_moves in range(time_index + 1):
@@ -79,7 +101,9 @@ class CRRPricingEngine:
                 except OverflowError as error:
                     raise PricingError("lattice backward induction overflowed") from error
                 intrinsic = payoff.value_at(node_spot)
-                node_value, exercised = policy.node_value(continuation, intrinsic)
+                node_value, exercised = policy.node_value(
+                    continuation, intrinsic, time_index
+                )
                 early_exercise_nodes += int(exercised)
                 next_values.append(node_value)
             values = next_values
