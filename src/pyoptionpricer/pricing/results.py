@@ -5,10 +5,12 @@ from datetime import datetime
 from math import isfinite
 
 from pyoptionpricer.domain import (
+    AveragingMethod,
     BarrierDirection,
     BarrierKnockType,
     BarrierMonitoringConvention,
     Currency,
+    PathMonitoringConvention,
 )
 from pyoptionpricer.models import PricingModel, PricingModelConfiguration
 from pyoptionpricer.models.tree import CRRTreeParameters
@@ -83,6 +85,11 @@ class MonteCarloPricingDiagnostics:
     variance_reduction_method: str
     confidence_level: float
 
+    @property
+    def random_seed(self) -> int:
+        """Expose the configuration name while preserving the existing field."""
+        return self.seed
+
     def __post_init__(self) -> None:
         lower, upper = self.confidence_interval
         if any(
@@ -111,6 +118,43 @@ class MonteCarloPricingDiagnostics:
 
 
 @dataclass(frozen=True, slots=True)
+class AsianMonteCarloPricingDiagnostics(MonteCarloPricingDiagnostics):
+    """Simulation statistics and contractual averaging metadata."""
+
+    observation_count: int
+    averaging_method: AveragingMethod
+    monitoring_convention: PathMonitoringConvention
+
+    def __post_init__(self) -> None:
+        MonteCarloPricingDiagnostics.__post_init__(self)
+        if self.observation_count <= 0:
+            raise ValueError("observation_count must be positive")
+        if not isinstance(self.averaging_method, AveragingMethod):
+            raise TypeError("averaging_method must be an AveragingMethod")
+        if not isinstance(self.monitoring_convention, PathMonitoringConvention):
+            raise TypeError(
+                "monitoring_convention must be a PathMonitoringConvention"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class LookbackMonteCarloPricingDiagnostics(MonteCarloPricingDiagnostics):
+    """Simulation statistics and contractual lookback monitoring metadata."""
+
+    monitoring_count: int
+    monitoring_convention: PathMonitoringConvention
+
+    def __post_init__(self) -> None:
+        MonteCarloPricingDiagnostics.__post_init__(self)
+        if self.monitoring_count <= 0:
+            raise ValueError("monitoring_count must be positive")
+        if not isinstance(self.monitoring_convention, PathMonitoringConvention):
+            raise TypeError(
+                "monitoring_convention must be a PathMonitoringConvention"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class PricingResult:
     """Structured theoretical value and its reproducibility metadata."""
 
@@ -126,6 +170,8 @@ class PricingResult:
         | BarrierPricingDiagnostics
         | BSMPricingDiagnostics
         | MonteCarloPricingDiagnostics
+        | AsianMonteCarloPricingDiagnostics
+        | LookbackMonteCarloPricingDiagnostics
     )
 
     @property

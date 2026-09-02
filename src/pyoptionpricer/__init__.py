@@ -17,6 +17,8 @@ from pyoptionpricer.application import (
 )
 from pyoptionpricer.domain import (
     AssetClass,
+    AsianOptionContract,
+    AveragingMethod,
     BarrierDirection,
     BarrierKnockType,
     BarrierMonitoringConvention,
@@ -28,9 +30,11 @@ from pyoptionpricer.domain import (
     ExerciseStyle,
     InvalidContractError,
     InvalidPayoffError,
+    LookbackOptionContract,
     OptionContract,
     OptionProduct,
     OptionType,
+    PathMonitoringConvention,
     TerminalPayoff,
     VanillaOptionContract,
     VanillaPayoff,
@@ -51,6 +55,7 @@ from pyoptionpricer.models.tree import (
     calculate_crr_tree_parameters,
 )
 from pyoptionpricer.pricing import (
+    AsianMonteCarloPricingDiagnostics,
     BarrierPricingDiagnostics,
     BSMPricingDiagnostics,
     BSMPricingEngine,
@@ -81,6 +86,7 @@ from pyoptionpricer.pricing import (
     MarketComparisonError,
     ModelCapabilityValidator,
     MonteCarloPricingDiagnostics,
+    LookbackMonteCarloPricingDiagnostics,
     MonteCarloPricingEngine,
     OptionGreeks,
     PRICING_ENGINE_ROUTES,
@@ -102,6 +108,9 @@ from pyoptionpricer.pricing import (
 
 __all__ = [
     "AssetClass",
+    "AsianOptionContract",
+    "AsianMonteCarloPricingDiagnostics",
+    "AveragingMethod",
     "BarrierDirection",
     "BarrierKnockType",
     "BarrierMonitoringConvention",
@@ -147,6 +156,8 @@ __all__ = [
     "InvalidBSMParametersError",
     "InvalidMonteCarloParametersError",
     "InvalidPricingRequestError",
+    "LookbackOptionContract",
+    "LookbackMonteCarloPricingDiagnostics",
     "InvalidTreeParametersError",
     "MarketComparison",
     "MarketComparisonError",
@@ -159,6 +170,7 @@ __all__ = [
     "OptionGreeks",
     "PRICING_ENGINE_ROUTES",
     "OptionType",
+    "PathMonitoringConvention",
     "TerminalPayoff",
     "VanillaOptionContract",
     "VanillaBSMProductPricer",

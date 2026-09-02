@@ -57,6 +57,18 @@ class BarrierMonitoringConvention(str, Enum):
     DISCRETE_NODES = "DISCRETE_NODES"
 
 
+class AveragingMethod(str, Enum):
+    """Supported methods for reducing Asian option observations."""
+
+    ARITHMETIC = "ARITHMETIC"
+
+
+class PathMonitoringConvention(str, Enum):
+    """Supported monitoring conventions for path-dependent contracts."""
+
+    DISCRETE_DATES = "DISCRETE_DATES"
+
+
 class Currency(str, Enum):
     INR = "INR"
     USD = "USD"
@@ -269,6 +281,105 @@ class BarrierOptionContract(OptionContract):
     @property
     def product(self) -> OptionProduct:
         return OptionProduct.BARRIER
+
+    @property
+    def payoff(self) -> "TerminalPayoff":
+        from pyoptionpricer.domain.payoffs import VanillaPayoff
+
+        return VanillaPayoff(self.option_type, self.strike)
+
+
+def _normalize_monitoring_schedule(
+    name: str, schedule: tuple[date, ...], expiry: date
+) -> tuple[date, ...]:
+    try:
+        dates = tuple(schedule)
+    except TypeError as error:
+        raise InvalidContractError(f"{name} must be an iterable of dates") from error
+    if not dates:
+        raise InvalidContractError(f"{name} must not be empty")
+    if any(
+        not isinstance(item, date) or isinstance(item, datetime) for item in dates
+    ):
+        raise InvalidContractError(f"{name} must contain only dates")
+    if len(set(dates)) != len(dates):
+        raise InvalidContractError(f"{name} must not contain duplicates")
+    if any(item > expiry for item in dates):
+        raise InvalidContractError(f"{name} must not contain dates after expiry")
+    return tuple(sorted(dates))
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AsianOptionContract(OptionContract):
+    """Arithmetic-average price option with explicit discrete observations."""
+
+    observation_schedule: tuple[date, ...]
+    averaging_method: AveragingMethod = AveragingMethod.ARITHMETIC
+    monitoring_convention: PathMonitoringConvention = (
+        PathMonitoringConvention.DISCRETE_DATES
+    )
+
+    def __post_init__(self) -> None:
+        OptionContract.__post_init__(self)
+        if self.exercise_style is not ExerciseStyle.EUROPEAN:
+            raise InvalidContractError(
+                "Asian options currently support only European exercise"
+            )
+        if not isinstance(self.averaging_method, AveragingMethod):
+            raise InvalidContractError("averaging_method must be an AveragingMethod")
+        if not isinstance(self.monitoring_convention, PathMonitoringConvention):
+            raise InvalidContractError(
+                "monitoring_convention must be a PathMonitoringConvention"
+            )
+        object.__setattr__(
+            self,
+            "observation_schedule",
+            _normalize_monitoring_schedule(
+                "observation_schedule", self.observation_schedule, self.expiry
+            ),
+        )
+
+    @property
+    def product(self) -> OptionProduct:
+        return OptionProduct.ASIAN
+
+    @property
+    def payoff(self) -> "TerminalPayoff":
+        from pyoptionpricer.domain.payoffs import VanillaPayoff
+
+        return VanillaPayoff(self.option_type, self.strike)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class LookbackOptionContract(OptionContract):
+    """Fixed-strike lookback option with explicit discrete monitoring."""
+
+    monitoring_schedule: tuple[date, ...]
+    monitoring_convention: PathMonitoringConvention = (
+        PathMonitoringConvention.DISCRETE_DATES
+    )
+
+    def __post_init__(self) -> None:
+        OptionContract.__post_init__(self)
+        if self.exercise_style is not ExerciseStyle.EUROPEAN:
+            raise InvalidContractError(
+                "lookback options currently support only European exercise"
+            )
+        if not isinstance(self.monitoring_convention, PathMonitoringConvention):
+            raise InvalidContractError(
+                "monitoring_convention must be a PathMonitoringConvention"
+            )
+        object.__setattr__(
+            self,
+            "monitoring_schedule",
+            _normalize_monitoring_schedule(
+                "monitoring_schedule", self.monitoring_schedule, self.expiry
+            ),
+        )
+
+    @property
+    def product(self) -> OptionProduct:
+        return OptionProduct.LOOKBACK
 
     @property
     def payoff(self) -> "TerminalPayoff":

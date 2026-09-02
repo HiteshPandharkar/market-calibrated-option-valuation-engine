@@ -6,6 +6,8 @@ from pyoptionpricer.models.monte_carlo.parameters import (
 )
 from pyoptionpricer.models.monte_carlo.paths import GeneratedPath, PathGenerator
 from pyoptionpricer.models.monte_carlo.payoffs import (
+    ArithmeticAveragePathPayoffEvaluator,
+    FixedStrikeLookbackPathPayoffEvaluator,
     PathPayoffEvaluator,
     TerminalPathPayoffEvaluator,
 )
@@ -17,6 +19,8 @@ from pyoptionpricer.models.monte_carlo.random_numbers import (
 
 __all__ = [
     "GeneratedPath",
+    "ArithmeticAveragePathPayoffEvaluator",
+    "FixedStrikeLookbackPathPayoffEvaluator",
     "GeometricBrownianMotion",
     "InvalidMonteCarloParametersError",
     "MonteCarloModelParameters",

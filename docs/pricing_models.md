@@ -72,8 +72,9 @@ convention. `BSMPricingDiagnostics.calculation_mode` records whether the
 analytical formula or deterministic limit was used, together with discount
 factors and `d1`/`d2` when defined.
 
-Monte Carlo supports European vanilla calls and puts under risk-neutral
-geometric Brownian motion and is selected with `MonteCarloModelParameters`.
+Monte Carlo supports European vanilla, arithmetic-average price Asian, and
+fixed-strike lookback calls and puts under risk-neutral geometric Brownian
+motion and is selected with `MonteCarloModelParameters`.
 The configuration records the path count, time steps, integer seed, confidence
 level, and whether antithetic variates are enabled. Antithetic runs require an
 even path count and at least two complete pairs so uncertainty can be estimated
@@ -86,6 +87,23 @@ transitions, `PathGenerator` streams complete paths, and
 `TerminalPathPayoffEvaluator` adapts the existing terminal-payoff contract.
 These components contain no market-provider behavior and are reusable by later
 path-dependent products.
+
+`AsianOptionContract` carries a non-empty `observation_schedule` and the
+explicit `ARITHMETIC` averaging method. `LookbackOptionContract` carries a
+non-empty `monitoring_schedule`; its fixed-strike payoff uses the monitored
+maximum for calls and monitored minimum for puts. Both products use the
+`DISCRETE_DATES` convention and do not imply continuous monitoring. Contract
+dates must align exactly with nodes in the configured Monte Carlo grid. A
+misaligned date is rejected instead of being silently rounded to a nearby
+node. The valuation date may be included as node zero.
+
+Path-dependent payoff logic is isolated in
+`ArithmeticAveragePathPayoffEvaluator` and
+`FixedStrikeLookbackPathPayoffEvaluator`. Both consume the same
+`GeneratedPath` stream used for vanilla valuation; neither product implements
+its own simulation loop. Product-specific Monte Carlo diagnostics add the
+observation or monitoring count and contractual convention to the common
+seed, grid, standard-error, and confidence-interval statistics.
 
 `MonteCarloPricingDiagnostics` returns the estimate, standard error, two-sided
 normal confidence interval, actual path and time-step counts, seed, confidence

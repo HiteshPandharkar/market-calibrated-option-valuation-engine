@@ -2,6 +2,8 @@
 
 from pyoptionpricer.domain.option_contract import (
     AssetClass,
+    AsianOptionContract,
+    AveragingMethod,
     BarrierDirection,
     BarrierKnockType,
     BarrierMonitoringConvention,
@@ -11,9 +13,11 @@ from pyoptionpricer.domain.option_contract import (
     DigitalOptionContract,
     ExerciseStyle,
     InvalidContractError,
+    LookbackOptionContract,
     OptionContract,
     OptionProduct,
     OptionType,
+    PathMonitoringConvention,
     VanillaOptionContract,
 )
 from pyoptionpricer.domain.payoffs import (
@@ -25,6 +29,8 @@ from pyoptionpricer.domain.payoffs import (
 
 __all__ = [
     "AssetClass",
+    "AsianOptionContract",
+    "AveragingMethod",
     "BarrierDirection",
     "BarrierKnockType",
     "BarrierMonitoringConvention",
@@ -36,9 +42,11 @@ __all__ = [
     "ExerciseStyle",
     "InvalidContractError",
     "InvalidPayoffError",
+    "LookbackOptionContract",
     "OptionContract",
     "OptionProduct",
     "OptionType",
+    "PathMonitoringConvention",
     "TerminalPayoff",
     "VanillaOptionContract",
     "VanillaPayoff",
