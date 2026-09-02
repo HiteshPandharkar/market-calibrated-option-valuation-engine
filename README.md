@@ -1,8 +1,8 @@
 # PyOptionPricer
 
 PyOptionPricer is a provider-neutral Python engine for valuing European,
-American, and Bermudan options with the Cox-Ross-Rubinstein (CRR) binomial
-model and European
+American, Bermudan, and discrete-node barrier options with the
+Cox-Ross-Rubinstein (CRR) binomial model and European
 vanilla and cash-or-nothing digital options with analytical Black-Scholes-Merton
 (BSM). It combines normalized market data
 with auditable input provenance, tree-based Greeks, market comparison,
@@ -63,6 +63,8 @@ From an uninstalled source checkout, prefix the equivalent module command with
 
 - CRR valuation for European, American, and Bermudan vanilla and
   cash-or-nothing digital calls and puts
+- CRR valuation for up/down knock-in and knock-out European vanilla options,
+  with explicit node monitoring, rebate timing, and grid-alignment diagnostics
 - analytical BSM valuation and Delta/Gamma/Theta/Vega/Rho for European vanilla and cash-or-nothing digital calls and puts
 - configurable digital cash payouts with a strict, zero-payoff strike boundary
 - maturity-aware yield curves and continuous dividend yields
@@ -98,9 +100,10 @@ pyoptionpricer/
     └── results.py
 ```
 
-`OptionContract` defines common option terms. `VanillaOptionContract` and
-`DigitalOptionContract` supply their own product identifiers and terminal
-payoffs. Stable public imports remain available from `pyoptionpricer`.
+`OptionContract` defines common option terms. `VanillaOptionContract`,
+`DigitalOptionContract`, and `BarrierOptionContract` supply their own product
+identifiers and payoff terms. Stable public imports remain available from
+`pyoptionpricer`.
 
 Market implied volatility is preferred when a provider supplies a reliable
 option chain. Historical or EWMA volatility is used only when an explicit

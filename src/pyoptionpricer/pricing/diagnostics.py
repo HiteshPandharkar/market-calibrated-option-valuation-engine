@@ -5,7 +5,12 @@ from datetime import timedelta
 from enum import Enum
 from math import exp, isfinite
 
-from pyoptionpricer.domain import CashOrNothingPayoff, ExerciseStyle, OptionType
+from pyoptionpricer.domain import (
+    BarrierOptionContract,
+    CashOrNothingPayoff,
+    ExerciseStyle,
+    OptionType,
+)
 from pyoptionpricer.market.exceptions import (
     MalformedMarketDataError,
     MarketDataAuthenticationError,
@@ -218,6 +223,13 @@ def _satisfies_no_arbitrage(request: PricingRequest, result: PricingResult) -> b
     strike = inputs.strike.value
     maturity = inputs.maturity.value
     payoff = request.instrument.payoff
+    if isinstance(request.instrument, BarrierOptionContract):
+        vanilla_upper = (
+            spot if request.instrument.option_type is OptionType.CALL else strike
+        )
+        upper = vanilla_upper + request.instrument.rebate
+        tolerance = 1e-12 * max(1.0, upper)
+        return factor_condition and -tolerance <= result.price <= upper + tolerance
     style = request.instrument.exercise_style
     has_early_exercise = style is not ExerciseStyle.EUROPEAN
     can_exercise_at_valuation = style is ExerciseStyle.AMERICAN or (

@@ -30,7 +30,7 @@ product identifier and terminal payoff; neither concrete product is modeled as
 a subtype of the other.
 
 CRR supports European, American, and Bermudan vanilla and cash-or-nothing
-digital options. Bermudan contracts carry an explicit, normalized exercise
+digital options, plus European vanilla single-barrier options. Bermudan contracts carry an explicit, normalized exercise
 schedule, and contractual dates must align exactly with the selected CRR grid.
 Black-Scholes-Merton (BSM) supports European vanilla and cash-or-nothing digital
 calls and puts and is selected with
@@ -42,6 +42,19 @@ Digital options carry a configurable `cash_payout`. Both the call and put pay
 zero when terminal spot is exactly equal to strike; payout requires strict
 in-the-money settlement. Analytical digital Greeks are returned without
 smoothing because their near-strike instability is economically meaningful.
+
+`BarrierOptionContract` canonically represents up-and-out, down-and-out,
+up-and-in, and down-and-in calls and puts. Phase 2 monitoring is discrete at
+the valuation node and every CRR model time node; it is not a continuous-
+monitoring approximation. A knock-out rebate is paid when the barrier is first
+observed, while a knock-in rebate is paid at expiry only if the barrier was
+never observed. Barrier state transitions live in a dedicated tree policy, so
+the vanilla and digital lattice path is unchanged. `BarrierPricingDiagnostics`
+records the barrier terms, monitoring and rebate conventions, tree steps, and
+warnings when the barrier is off-grid or outside the reachable lattice range.
+Zero-rebate knock-in and knock-out prices sum to the corresponding vanilla CRR
+price under the same grid and market assumptions. BSM rejects barriers
+explicitly because no analytical barrier strategy is included in this phase.
 
 BSM product formulas are isolated behind `BSMProductPricer` strategies.
 `BSM_PRODUCT_PRICERS` is the immutable composition point that maps each

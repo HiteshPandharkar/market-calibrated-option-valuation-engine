@@ -55,6 +55,7 @@ from pyoptionpricer.pricing.requests import (
     PricingRequest,
 )
 from pyoptionpricer.pricing.results import (
+    BarrierPricingDiagnostics,
     BSMPricingDiagnostics,
     PricingDiagnostics,
     PricingResult,
@@ -63,6 +64,7 @@ from pyoptionpricer.pricing.errors import PricingError
 from pyoptionpricer.models.tree.pricing_engine import CRRPricingEngine
 
 __all__ = [
+    "BarrierPricingDiagnostics",
     "CRRConvergenceRunner",
     "BSMPricingDiagnostics",
     "BSMPricingEngine",

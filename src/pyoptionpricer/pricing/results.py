@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
 
-from pyoptionpricer.domain import Currency
+from pyoptionpricer.domain import (
+    BarrierDirection,
+    BarrierKnockType,
+    BarrierMonitoringConvention,
+    Currency,
+)
 from pyoptionpricer.models import PricingModel, PricingModelConfiguration
 from pyoptionpricer.models.tree import CRRTreeParameters
 from pyoptionpricer.pricing.greeks import OptionGreeks
@@ -17,6 +22,25 @@ class PricingDiagnostics:
 
     tree_parameters: CRRTreeParameters
     early_exercise_nodes: int
+
+
+@dataclass(frozen=True, slots=True)
+class BarrierPricingDiagnostics(PricingDiagnostics):
+    """CRR assumptions and grid warnings for a single-barrier valuation."""
+
+    barrier_level: float
+    barrier_direction: BarrierDirection
+    knock_type: BarrierKnockType
+    monitoring_convention: BarrierMonitoringConvention
+    rebate: float
+    tree_steps: int
+    grid_alignment_warnings: tuple[str, ...]
+    rebate_timing: str
+
+    @property
+    def barrier_type(self) -> str:
+        """Return the canonical combined direction/knock identifier."""
+        return f"{self.barrier_direction.value}_AND_{self.knock_type.value}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,7 +81,9 @@ class PricingResult:
     valuation_datetime: datetime
     inputs: PricingInputs
     greeks: OptionGreeks
-    diagnostics: PricingDiagnostics | BSMPricingDiagnostics
+    diagnostics: (
+        PricingDiagnostics | BarrierPricingDiagnostics | BSMPricingDiagnostics
+    )
 
     @property
     def model(self) -> PricingModel:

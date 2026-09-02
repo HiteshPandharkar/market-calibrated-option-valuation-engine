@@ -17,6 +17,10 @@ from pyoptionpricer.application import (
 )
 from pyoptionpricer.domain import (
     AssetClass,
+    BarrierDirection,
+    BarrierKnockType,
+    BarrierMonitoringConvention,
+    BarrierOptionContract,
     BermudanExercise,
     CashOrNothingPayoff,
     Currency,
@@ -45,6 +49,7 @@ from pyoptionpricer.models.tree import (
     calculate_crr_tree_parameters,
 )
 from pyoptionpricer.pricing import (
+    BarrierPricingDiagnostics,
     BSMPricingDiagnostics,
     BSMPricingEngine,
     BSMCalculation,
@@ -93,6 +98,11 @@ from pyoptionpricer.pricing import (
 
 __all__ = [
     "AssetClass",
+    "BarrierDirection",
+    "BarrierKnockType",
+    "BarrierMonitoringConvention",
+    "BarrierOptionContract",
+    "BarrierPricingDiagnostics",
     "BermudanExercise",
     "CashOrNothingPayoff",
     "BSMModelParameters",

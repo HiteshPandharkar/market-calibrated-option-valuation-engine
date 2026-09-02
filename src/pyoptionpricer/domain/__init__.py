@@ -2,6 +2,10 @@
 
 from pyoptionpricer.domain.option_contract import (
     AssetClass,
+    BarrierDirection,
+    BarrierKnockType,
+    BarrierMonitoringConvention,
+    BarrierOptionContract,
     BermudanExercise,
     Currency,
     DigitalOptionContract,
@@ -21,6 +25,10 @@ from pyoptionpricer.domain.payoffs import (
 
 __all__ = [
     "AssetClass",
+    "BarrierDirection",
+    "BarrierKnockType",
+    "BarrierMonitoringConvention",
+    "BarrierOptionContract",
     "BermudanExercise",
     "Currency",
     "CashOrNothingPayoff",

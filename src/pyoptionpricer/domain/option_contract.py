@@ -37,6 +37,26 @@ class OptionProduct(str, Enum):
     LOOKBACK = "LOOKBACK"
 
 
+class BarrierDirection(str, Enum):
+    """Direction in which a monitored level activates a barrier."""
+
+    UP = "UP"
+    DOWN = "DOWN"
+
+
+class BarrierKnockType(str, Enum):
+    """Whether touching the barrier activates or terminates the option."""
+
+    IN = "IN"
+    OUT = "OUT"
+
+
+class BarrierMonitoringConvention(str, Enum):
+    """Supported observation schedules for a barrier contract."""
+
+    DISCRETE_NODES = "DISCRETE_NODES"
+
+
 class Currency(str, Enum):
     INR = "INR"
     USD = "USD"
@@ -190,3 +210,68 @@ class DigitalOptionContract(OptionContract):
         return CashOrNothingPayoff(
             self.option_type, self.strike, self.cash_payout
         )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class BarrierOptionContract(OptionContract):
+    """Single-barrier terms over a European vanilla terminal payoff.
+
+    The rebate is paid when a knock-out barrier is first observed. For a
+    knock-in option it is paid at expiry only when the barrier was never
+    observed. Monitoring includes the valuation node and every CRR time node.
+    """
+
+    barrier_level: float
+    barrier_direction: BarrierDirection
+    knock_type: BarrierKnockType
+    rebate: float = 0.0
+    monitoring_convention: BarrierMonitoringConvention = (
+        BarrierMonitoringConvention.DISCRETE_NODES
+    )
+
+    def __post_init__(self) -> None:
+        OptionContract.__post_init__(self)
+        if self.exercise_style is not ExerciseStyle.EUROPEAN:
+            raise InvalidContractError(
+                "barrier options currently support only European exercise"
+            )
+        if (
+            isinstance(self.barrier_level, bool)
+            or not isinstance(self.barrier_level, (int, float))
+            or not isfinite(self.barrier_level)
+            or self.barrier_level <= 0
+        ):
+            raise InvalidContractError(
+                "barrier_level must be a finite positive number"
+            )
+        if not isinstance(self.barrier_direction, BarrierDirection):
+            raise InvalidContractError(
+                "barrier_direction must be a BarrierDirection"
+            )
+        if not isinstance(self.knock_type, BarrierKnockType):
+            raise InvalidContractError("knock_type must be a BarrierKnockType")
+        if (
+            isinstance(self.rebate, bool)
+            or not isinstance(self.rebate, (int, float))
+            or not isfinite(self.rebate)
+            or self.rebate < 0
+        ):
+            raise InvalidContractError("rebate must be a finite non-negative number")
+        if not isinstance(
+            self.monitoring_convention, BarrierMonitoringConvention
+        ):
+            raise InvalidContractError(
+                "monitoring_convention must be a BarrierMonitoringConvention"
+            )
+        object.__setattr__(self, "barrier_level", float(self.barrier_level))
+        object.__setattr__(self, "rebate", float(self.rebate))
+
+    @property
+    def product(self) -> OptionProduct:
+        return OptionProduct.BARRIER
+
+    @property
+    def payoff(self) -> "TerminalPayoff":
+        from pyoptionpricer.domain.payoffs import VanillaPayoff
+
+        return VanillaPayoff(self.option_type, self.strike)
